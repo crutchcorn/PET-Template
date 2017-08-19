@@ -1,6 +1,6 @@
-import {postGetAllAction} from "./controller/PostGetAllAction";
-import {postGetByIdAction} from "./controller/PostGetByIdAction";
-import {postSaveAction} from "./controller/PostSaveAction";
+import {postGetAllAction} from "./modules/Posts/controllers/PostGetAllAction";
+import {postGetByIdAction} from "./modules/Posts/controllers/PostGetByIdAction";
+import {postSaveAction} from "./modules/Posts/controllers/PostSaveAction";
 
 /**
  * All application routes.

@@ -9,7 +9,7 @@
     "database": "test",
     "autoSchemaSync": true,
     "entities": [
-      "src/modules/**/model/*.js"
+      "src/modules/**/models/*.js"
     ],
     "subscribers": [
       "src/subscriber/*.js,"
