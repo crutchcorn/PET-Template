@@ -1,15 +1,15 @@
 [
   {
     "name": "default",
-    "type": "mysql",
+    "type": "postgres",
     "host": "localhost",
-    "port": 3306,
+    "port": 5432,
     "username": "test",
     "password": "test",
     "database": "test",
     "autoSchemaSync": true,
     "entities": [
-      "src/entity/*.js"
+      "src/modules/**/model/*.js"
     ],
     "subscribers": [
       "src/subscriber/*.js,"

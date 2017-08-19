@@ -1,5 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable} from "typeorm";
-import {Category} from "./Category";
+import {Category} from "../../Categories/model/Category";
 
 @Entity()
 export class Post {
