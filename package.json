@@ -27,11 +27,15 @@
     "typescript": "^2.4.2"
   },
   "dependencies": {
+    "@types/acl": "^0.4.33",
     "@types/body-parser": "^1.16.4",
-    "express": "^4.15.4",
     "@types/express": "^4.0.36",
+    "@types/glob": "^5.0.32",
     "@types/node": "^8.0.24",
+    "acl": "^0.4.10",
     "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "glob": "^7.1.2",
     "pg": "^7.1.0",
     "reflect-metadata": "^0.1.10",
     "typeorm": "0.1.0-alpha.35"
