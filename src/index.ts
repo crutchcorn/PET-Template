@@ -4,6 +4,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import {sync} from 'glob';
 import {resolve} from 'path';
+import flash = require('connect-flash');
 
 // create connection with database
 // note that its not active database connection
@@ -13,6 +14,7 @@ createConnection().then(async connection => {
   // create express app
   const app = express();
   app.use(bodyParser.json());
+  app.use(flash());
 
   sync('src/modules/*/policies/*.js').forEach(policyPath => {
     require(resolve(policyPath)).invokeRolesPolicies();
@@ -21,6 +23,10 @@ createConnection().then(async connection => {
 
   sync('src/modules/*/routes/*.js').forEach(routePath => {
     require(resolve(routePath)).default(app);
+  });
+
+  sync('src/modules/*/config/*.js').forEach(configPath => {
+    require(resolve(configPath)).default(app);
   });
 
   // run app
