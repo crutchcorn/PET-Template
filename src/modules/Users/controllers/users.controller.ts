@@ -21,8 +21,19 @@ export function signin(req, res, next) {
 };
 
 export function signup(req, res, next) {
-  passport.authenticate('local-signup', () => {
-    res.json({message: 'Your account was created'})
+  passport.authenticate('local-signup', (err, user, info) => {
+    if (err || !user) {
+      res.status(400).send(info);
+    } else {
+      req.login(user, function (err) {
+        if (err) {
+          console.log(err);
+          res.status(400).send(err);
+        } else {
+          res.json(user);
+        }
+      });
+    }
   })(req, res, next);
 };
 

@@ -18,7 +18,13 @@ export default function (app) {
 
   // used to deserialize the user
   passport.deserializeUser(function (id, done) {
-    userRepository.findOneById(id).then((user) => {
+    userRepository
+      .createQueryBuilder('row')
+      .select('row.id')
+      .addSelect('row.email')
+      .addSelect('row.password')
+      .where('row.id = :id', {id: id})
+      .getOne().then((user) => {
       done(null, user);
     }, (err) => {
       done(err, null);
@@ -45,7 +51,10 @@ export default function (app) {
 
         // find a user whose email is the same as the forms email
         // we are checking to see if the user trying to login already exists
-        userRepository.findOne({'email': email}).then((user) => {
+        userRepository
+          .createQueryBuilder('row')
+          .where('row.email = :email', {email: email})
+          .getOne().then((user) => {
           // check to see if theres already a user with that email
           if (user) {
             return done(null, false, {message: "That email is already taken"});
@@ -56,14 +65,17 @@ export default function (app) {
 
             // set the user's local credentials
             newUser.email = email;
+
+            const userToSave = JSON.parse(JSON.stringify(newUser));
             newUser.password = newUser.generateHash(password);
 
             // save the user
-            userRepository.save(newUser).then(() => {
+            userRepository.save(newUser).then((user) => {
+              return done(null, (<any>Object).assign(userToSave, {id: user.id}));
             }, (err) => {
-              if (err)
-                throw err;
-              return done(null, newUser);
+              if (err) {
+                return done(null, false, {message: err});
+              }
             });
           }
 
@@ -85,7 +97,13 @@ export default function (app) {
 
       // find a user whose email is the same as the forms email
       // we are checking to see if the user trying to login already exists
-      userRepository.findOne({ 'email' :  email }).then((user) => {
+      userRepository
+        .createQueryBuilder('row')
+        .select('row.id')
+        .addSelect('row.email')
+        .addSelect('row.password')
+        .where('row.email = :email', {email: email})
+        .getOne().then((user) => {
         // if no user is found, return the message
         if (!user) {
           return done(null, false, {message: 'No user found.'}); // req.flash is the way to set flashdata using connect-flash
@@ -97,7 +115,9 @@ export default function (app) {
         }
 
         // all is well, return successful user
-        return done(null, user);
+        userRepository.findOne({ 'email' :  email }).then((user) => {
+          return done(null, user);
+        });
       }, (err) => {
         // if there are any errors, return the error before anything else
         return done(err);

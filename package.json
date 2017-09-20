@@ -24,29 +24,30 @@
     "typeorm-express-example"
   ],
   "devDependencies": {
-    "typescript": "^2.4.2"
+    "typescript": "^2.5.2"
   },
   "dependencies": {
-    "@types/acl": "^0.4.33",
+    "@types/acl": "^0.4.34",
     "@types/bcrypt": "^1.0.0",
-    "@types/body-parser": "^1.16.4",
+    "@types/body-parser": "^1.16.5",
     "@types/connect-flash": "0.0.33",
-    "@types/express": "^4.0.36",
+    "@types/express": "^4.0.37",
     "@types/glob": "^5.0.32",
-    "@types/node": "^8.0.24",
+    "@types/node": "^8.0.28",
     "@types/passport": "^0.3.4",
     "@types/passport-local": "^1.0.31",
-    "acl": "^0.4.10",
+    "acl": "^0.4.11",
+    "app-root-path": "^2.0.1",
     "bcrypt": "^1.0.3",
-    "body-parser": "^1.17.2",
+    "body-parser": "^1.18.1",
     "connect-flash": "^0.1.1",
     "express": "^4.15.4",
     "glob": "^7.1.2",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
-    "pg": "^7.1.0",
+    "pg": "^7.3.0",
     "reflect-metadata": "^0.1.10",
-    "typeorm": "0.1.0-alpha.35"
+    "typeorm": "0.1.0-alpha.44"
   },
   "scripts": {
     "start": "tsc && node src/index.js"
