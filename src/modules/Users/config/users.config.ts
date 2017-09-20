@@ -48,7 +48,7 @@ export default function (app) {
         userRepository.findOne({'email': email}).then((user) => {
           // check to see if theres already a user with that email
           if (user) {
-            return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
+            return done(null, false, {message: "That email is already taken"});
           } else {
             // if there is no user with that email
             // create the user
@@ -104,7 +104,6 @@ export default function (app) {
       });
 
     }));
-
 
   // Add passport's middleware
   app.use(passport.initialize());

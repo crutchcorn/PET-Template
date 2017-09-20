@@ -3,7 +3,7 @@ import {Strategy as LocalStrategy} from 'passport-local';
 import {getManager} from 'typeorm';
 import * as passport from 'passport';
 
-export function signin(req, res) {
+export function signin(req, res, next) {
   passport.authenticate('local-login', (err, user, info) => {
     if (err || !user) {
       res.status(400).send(info);
@@ -17,13 +17,13 @@ export function signin(req, res) {
         }
       });
     }
-  })
+  })(req, res, next)
 };
 
 export function signup(req, res, next) {
-  passport.authenticate('local-signup', {
-    failureFlash : true // allow flash messages
-  }, () => {})(req, res, next);
+  passport.authenticate('local-signup', () => {
+    res.json({message: 'Your account was created'})
+  })(req, res, next);
 };
 
 
