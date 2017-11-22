@@ -12,6 +12,9 @@ import * as compress from 'compression';
 import * as _ from 'lodash';
 import * as morgan from 'morgan';
 import * as cookieParser from 'cookie-parser';
+import {Request, Response, NextFunction} from 'express';
+import {Express as appType} from "express-serve-static-core";
+
 const config = require('../config');
 const flash = require('connect-flash');
 
@@ -19,7 +22,7 @@ const flash = require('connect-flash');
  * Initialize local variables
  * TODO: See if this is all needed
  */
-export function initLocalVariables(app) {
+export function initLocalVariables(app: appType): void {
   // Setting application local variables
   app.locals.title = config.app.title;
   app.locals.description = config.app.description;
@@ -50,7 +53,7 @@ export function initLocalVariables(app) {
 /**
  * Initialize application middleware
  */
-export function initMiddleware(app) {
+export function initMiddleware(app: appType): void {
   // Should be placed before express.static
   app.use(compress({
     filter: function (req, res) {
@@ -92,7 +95,7 @@ export function initMiddleware(app) {
 /**
  * Configure Express session
  */
-export function initSession(app): void {
+export function initSession(app: appType): void {
   // TODO: Check that there is no more MongoDB stuff
   // Express MongoDB session storage
   app.use(session({
@@ -114,7 +117,7 @@ export function initSession(app): void {
 /**
  * Invoke modules server configuration
  */
-export function initModulesConfiguration(app): void {
+export function initModulesConfiguration(app: appType): void {
   config.files.configs.forEach(function (configPath) {
     require(path.resolve(configPath))(app);
   });
@@ -123,7 +126,7 @@ export function initModulesConfiguration(app): void {
 /**
  * Configure Helmet headers configuration for security
  */
-export function initHelmetHeaders(app): void {
+export function initHelmetHeaders(app: appType): void {
   // six months expiration period specified in seconds
   var SIX_MONTHS = 15778476;
 
@@ -142,7 +145,7 @@ export function initHelmetHeaders(app): void {
 /**
  * Configure the modules ACL policies
  */
-export function initModulesServerPolicies(app): void {
+export function initModulesServerPolicies(app: appType): void {
   // Globbing policy files
   config.files.policies.forEach(function (policyPath) {
     require(path.resolve(policyPath)).invokeRolesPolicies();
@@ -152,7 +155,7 @@ export function initModulesServerPolicies(app): void {
 /**
  * Configure the modules server routes
  */
-export function initModulesServerRoutes(app): void {
+export function initModulesServerRoutes(app: appType): void {
   // Globbing routing files
   config.files.routes.forEach(function (routePath) {
     require(path.resolve(routePath))(app);
@@ -162,8 +165,8 @@ export function initModulesServerRoutes(app): void {
 /**
  * Configure error handling
  */
-export function initErrorRoutes(app): void {
-  app.use(function (err, req, res, next) {
+export function initErrorRoutes(app: appType): void {
+  app.use(function (err, req: Request, res: Response, next: NextFunction) {
     // If the error object doesn't exists
     if (!err) {
       return next();
@@ -173,7 +176,7 @@ export function initErrorRoutes(app): void {
     console.error(err.stack);
 
     // Redirect to error page
-    res.redirect('/server-error');
+    res.status(500).json({"message": err});
   });
 };
 
@@ -182,7 +185,7 @@ export function initErrorRoutes(app): void {
  */
 export function init() {
     // Initialize express app
-    var app = express();
+    var app: appType = express();
 
     // Initialize local variables
     this.initLocalVariables(app);

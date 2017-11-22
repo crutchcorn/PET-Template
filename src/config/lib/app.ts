@@ -13,7 +13,7 @@ export function init(callback: (app: any, config: any) => any) { // TODO: Add ty
       var app = express.init();
       if (callback) callback(app, config);
     })
-    .catch(error => console.log('TypeORM connection error: ', error));
+    .catch(error => console.log((<any>chalk).red('TypeORM connection error: ', error)));
 };
 
 export function start(callback ?: (app: any, config: any) => any) {
@@ -34,7 +34,7 @@ export function start(callback ?: (app: any, config: any) => any) {
       console.log((<any>chalk).green('App version:     ' + config.pet.version));
       // TODO: Add info to pet-version
       if (config.pet['pet-version']) {
-        console.log((<any>chalk).green('MEAN.JS version: ' + config.meanjs['meanjs-version']));
+        console.log((<any>chalk).green('PET version: ' + config.pet['pet-version']));
       }
       console.log('--');
 
