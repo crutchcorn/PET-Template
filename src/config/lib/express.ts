@@ -183,33 +183,33 @@ export function initErrorRoutes(app: appType): void {
 /**
  * Initialize the Express application
  */
-export function init() {
-    // Initialize express app
-    var app: appType = express();
+export function init(): appType {
+  // Initialize express app
+  var app: appType = express();
 
-    // Initialize local variables
-    this.initLocalVariables(app);
+  // Initialize local variables
+  this.initLocalVariables(app);
 
-    // Initialize Express middleware
-    this.initMiddleware(app);
+  // Initialize Express middleware
+  this.initMiddleware(app);
 
-    // Initialize Helmet security headers
-    this.initHelmetHeaders(app);
+  // Initialize Helmet security headers
+  this.initHelmetHeaders(app);
 
-    // Initialize Express session
-    this.initSession(app);
+  // Initialize Express session
+  this.initSession(app);
 
-    // Initialize Modules configuration
-    this.initModulesConfiguration(app);
+  // Initialize Modules configuration
+  this.initModulesConfiguration(app);
 
-    // Initialize modules server authorization policies
-    this.initModulesServerPolicies(app);
+  // Initialize modules server authorization policies
+  this.initModulesServerPolicies(app);
 
-    // Initialize modules server routes
-    this.initModulesServerRoutes(app);
+  // Initialize modules server routes
+  this.initModulesServerRoutes(app);
 
-    // Initialize error routes
-    this.initErrorRoutes(app);
+  // Initialize error routes
+  this.initErrorRoutes(app);
 
-    return app;
+  return app;
 }

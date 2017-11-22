@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import {createConnection} from 'typeorm';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as helmet from 'helmet';
+import * as lusca from 'lusca';
 import {sync} from 'glob';
 import {resolve} from 'path';
 // import flash = require('connect-flash');
@@ -13,6 +15,25 @@ createConnection().then(async connection => {
 
   // create express app
   const app = express();
+  var SIX_MONTHS = 15778476;
+
+  app.use(helmet.frameguard());
+  app.use(helmet.xssFilter());
+  app.use(helmet.noSniff());
+  app.use(helmet.ieNoOpen());
+  app.use(helmet.hsts({
+    maxAge: SIX_MONTHS,
+    includeSubdomains: true,
+    force: true
+  }));
+  app.disable('x-powered-by');
+  app.use(lusca({
+    csrf: false,
+    csp: false,
+    xframe: 'SAMEORIGIN',
+    p3p: 'ABCDEF',
+    xssProtection: true
+  }))
   app.use(bodyParser.json());
 
   sync('src/modules/*/config/*.js').forEach(configPath => {

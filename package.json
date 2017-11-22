@@ -72,6 +72,6 @@
     "winston": "^2.4.0"
   },
   "scripts": {
-    "start": "tsc && node src/index.js"
+    "start": "tsc && node src/server.js"
   }
 }
