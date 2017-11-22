@@ -4,7 +4,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import {sync} from 'glob';
 import {resolve} from 'path';
-import flash = require('connect-flash');
+// import flash = require('connect-flash');
 
 // create connection with database
 // note that its not active database connection

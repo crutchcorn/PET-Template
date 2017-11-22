@@ -9,4 +9,7 @@ export default function (app) {
   // process the login form
   app.route('/login')
     .post(signin);
+
+  app.route('/logout')
+    .get(signout);
 };
