@@ -4,7 +4,7 @@ import * as bodyParser from 'body-parser';
 import * as favicon from 'serve-favicon';
 import * as methodOverride from 'method-override';
 import * as express from 'express';
-import * as path from 'path';
+import {resolve} from 'path';
 import * as helmet from 'helmet';
 import * as session from 'express-session';
 import * as lusca from 'lusca';
@@ -119,7 +119,7 @@ export function initSession(app: appType): void {
  */
 export function initModulesConfiguration(app: appType): void {
   config.files.configs.forEach(function (configPath) {
-    require(path.resolve(configPath))(app);
+    require(resolve(configPath))(app);
   });
 };
 
@@ -148,7 +148,7 @@ export function initHelmetHeaders(app: appType): void {
 export function initModulesServerPolicies(app: appType): void {
   // Globbing policy files
   config.files.policies.forEach(function (policyPath) {
-    require(path.resolve(policyPath)).invokeRolesPolicies();
+    require(resolve(policyPath)).invokeRolesPolicies();
   });
 };
 
@@ -158,7 +158,7 @@ export function initModulesServerPolicies(app: appType): void {
 export function initModulesServerRoutes(app: appType): void {
   // Globbing routing files
   config.files.routes.forEach(function (routePath) {
-    require(path.resolve(routePath))(app);
+    require(resolve(routePath))(app);
   });
 };
 
@@ -184,32 +184,32 @@ export function initErrorRoutes(app: appType): void {
  * Initialize the Express application
  */
 export function init(): appType {
-  // Initialize express app
-  var app: appType = express();
+    // Initialize express app
+    var app: appType = express();
 
-  // Initialize local variables
-  this.initLocalVariables(app);
+    // Initialize local variables
+    this.initLocalVariables(app);
 
-  // Initialize Express middleware
-  this.initMiddleware(app);
+    // Initialize Express middleware
+    this.initMiddleware(app);
 
-  // Initialize Helmet security headers
-  this.initHelmetHeaders(app);
+    // Initialize Helmet security headers
+    this.initHelmetHeaders(app);
 
-  // Initialize Express session
-  this.initSession(app);
+    // Initialize Express session
+    this.initSession(app);
 
-  // Initialize Modules configuration
-  this.initModulesConfiguration(app);
+    // Initialize Modules configuration
+    this.initModulesConfiguration(app);
 
-  // Initialize modules server authorization policies
-  this.initModulesServerPolicies(app);
+    // Initialize modules server authorization policies
+    this.initModulesServerPolicies(app);
 
-  // Initialize modules server routes
-  this.initModulesServerRoutes(app);
+    // Initialize modules server routes
+    this.initModulesServerRoutes(app);
 
-  // Initialize error routes
-  this.initErrorRoutes(app);
+    // Initialize error routes
+    this.initErrorRoutes(app);
 
-  return app;
+    return app;
 }

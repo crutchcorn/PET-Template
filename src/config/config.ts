@@ -3,9 +3,9 @@
  */
 import * as _ from 'lodash';
 import * as chalk from 'chalk';
-import * as glob from 'glob';
-import * as fs from 'fs';
-import * as path from 'path';
+import {sync} from 'glob';
+import {existsSync} from 'fs';
+import {resolve, join} from 'path';
 import {envDefault} from './env/default';
 import {envTest} from './env/test';
 import {envProduction} from './env/production';
@@ -15,7 +15,7 @@ import {envDevelopment} from './env/development';
 /**
  * Get files by glob patterns
  */
-const getGlobbedPaths = function (globPatterns, excludes?: string | any[]): string[] {
+const getGlobbedPaths = function (globPatterns: string | string[], excludes?: string | any[]): string[] {
   // URL paths regex
   var urlRegex = new RegExp('^(?:[a-z]+:)?\/\/', 'i');
 
@@ -31,7 +31,7 @@ const getGlobbedPaths = function (globPatterns, excludes?: string | any[]): stri
     if (urlRegex.test(globPatterns)) {
       output.push(globPatterns);
     } else {
-      var files = glob.sync(globPatterns);
+      var files = sync(globPatterns);
       if (excludes) {
         files = files.map(function (file) {
           if (_.isArray(excludes)) {
@@ -57,7 +57,7 @@ const getGlobbedPaths = function (globPatterns, excludes?: string | any[]): stri
  * Validate NODE_ENV existence
  */
 const validateEnvironmentVariable = function (): void {
-  var environmentFiles = glob.sync('./config/env/' + process.env.NODE_ENV + '.js');
+  var environmentFiles = sync('./config/env/' + process.env.NODE_ENV + '.js');
   console.log();
   if (!environmentFiles.length) {
     if (process.env.NODE_ENV) {
@@ -89,8 +89,8 @@ const validateSecureMode = function (config): true | void {
     return true;
   }
 
-  var privateKey = fs.existsSync(path.resolve(config.secure.privateKey));
-  var certificate = fs.existsSync(path.resolve(config.secure.certificate));
+  var privateKey = existsSync(resolve(config.secure.privateKey));
+  var certificate = existsSync(resolve(config.secure.certificate));
 
   if (!privateKey || !certificate) {
     console.log((<any>chalk).red('+ Error: Certificate file or key file is missing, falling back to non-SSL mode'));
@@ -160,30 +160,30 @@ var initGlobalConfig = function (): configReturn {
   validateEnvironmentVariable();
 
   // Get the default assets
-  const defaultAssets: {server: {[key: string]: string[]}} = require(path.join(process.cwd(), '/src/config/assets/default'));
+  const defaultAssets: {server: {[key: string]: string[]}} = require(join(process.cwd(), '/src/config/assets/default'));
 
   // Get the current assets
-  const environmentAssets: object = require(path.join(process.cwd(), '/src/config/assets/', process.env.NODE_ENV)) || {};
+  const environmentAssets: object = require(join(process.cwd(), '/src/config/assets/', process.env.NODE_ENV)) || {};
 
   // Merge assets
   let assets: any = _.merge(defaultAssets, environmentAssets);
 
   // Get the default config
-  const defaultConfig: envDefault = require(path.join(process.cwd(), '/src/config/env/default'));
+  const defaultConfig: envDefault = require(join(process.cwd(), '/src/config/env/default'));
 
   // Get the current config
   // TODO: Remove `any`
-  const environmentConfig: envTest | envProduction | envDevelopment = require(path.join(process.cwd(), '/src/config/env/', process.env.NODE_ENV)) || {};
+  const environmentConfig: envTest | envProduction | envDevelopment = require(join(process.cwd(), '/src/config/env/', process.env.NODE_ENV)) || {};
 
   // Merge config files
   let config = _.merge(defaultConfig, environmentConfig);
 
   // read package.json for MEAN.JS project information
-  const pkg: object = require(path.resolve('./package.json'));
+  const pkg: object = require(resolve('./package.json'));
   (<configReturn>config).pet = pkg;
 
   // Extend the config object with the local-NODE_ENV.js custom/local environment. This will override any settings present in the local configuration.
-  config = _.merge(config, (fs.existsSync(path.join(process.cwd(), '/src/config/env/local-' + process.env.NODE_ENV + '.js')) && require(path.join(process.cwd(), 'config/env/local-' + process.env.NODE_ENV + '.js'))) || {});
+  config = _.merge(config, (existsSync(join(process.cwd(), '/src/config/env/local-' + process.env.NODE_ENV + '.js')) && require(join(process.cwd(), 'config/env/local-' + process.env.NODE_ENV + '.js'))) || {});
 
   // Initialize global globbed files
   initGlobalConfigFiles(config, assets);
