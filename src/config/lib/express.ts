@@ -33,8 +33,6 @@ export function initLocalVariables(app: appType): void {
   app.locals.googleAnalyticsTrackingID = config.app.googleAnalyticsTrackingID;
   app.locals.facebookAppId = config.facebook.clientID;
   app.locals.twitterUsername = config.twitter.username;
-  app.locals.jsFiles = config.files.client.js;
-  app.locals.cssFiles = config.files.client.css;
   app.locals.livereload = config.livereload;
   app.locals.logo = config.logo;
   app.locals.favicon = config.favicon;
@@ -64,7 +62,7 @@ export function initMiddleware(app: appType): void {
 
   // Initialize favicon middleware
   // TODO: See if this is needed
-  app.use(favicon(app.locals.favicon));
+  // app.use(favicon(app.locals.favicon));
 
   // Enable logger (morgan) if enabled in the configuration file
   if (_.has(config, 'log.format')) {
@@ -145,7 +143,7 @@ export function initHelmetHeaders(app: appType): void {
 /**
  * Configure the modules ACL policies
  */
-export function initModulesServerPolicies(app: appType): void {
+export function initModulesServerPolicies(): void {
   // Globbing policy files
   config.files.policies.forEach(function (policyPath) {
     require(resolve(policyPath)).invokeRolesPolicies();
@@ -203,7 +201,7 @@ export function init(): appType {
     this.initModulesConfiguration(app);
 
     // Initialize modules server authorization policies
-    this.initModulesServerPolicies(app);
+    this.initModulesServerPolicies();
 
     // Initialize modules server routes
     this.initModulesServerRoutes(app);
