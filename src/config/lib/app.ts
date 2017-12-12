@@ -35,7 +35,7 @@ export function start(callback ?: (app: appType, config: any) => any) {
       console.log((<any>chalk).green('App version:     ' + config.pet.version));
       // TODO: Add info to pet-version
       if (config.pet['pet-version']) {
-        console.log((<any>chalk).green('PET version: ' + config.meanjs['pet-version']));
+        console.log((<any>chalk).green('PET version:     ' + config.pet['pet-version']));
       }
       console.log('--');
 

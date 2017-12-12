@@ -8,5 +8,4 @@ export class Category {
 
     @Column()
     name: string;
-
 }
