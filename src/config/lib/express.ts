@@ -119,7 +119,7 @@ export function initSession(app: appType): void {
  */
 export function initModulesConfiguration(app: appType): void {
   config.files.configs.forEach(function (configPath) {
-    require(resolve(configPath))(app);
+    require(resolve(configPath)).default(app);
   });
 };
 
@@ -158,7 +158,7 @@ export function initModulesServerPolicies(app: appType): void {
 export function initModulesServerRoutes(app: appType): void {
   // Globbing routing files
   config.files.routes.forEach(function (routePath) {
-    require(resolve(routePath))(app);
+    require(resolve(routePath)).default(app);
   });
 };
 

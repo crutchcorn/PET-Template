@@ -4,6 +4,7 @@ import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as helmet from 'helmet';
 import * as lusca from 'lusca';
+import {init} from './config/lib/testpress'
 import {sync} from 'glob';
 import {resolve} from 'path';
 // import flash = require('connect-flash');
@@ -36,18 +37,20 @@ createConnection().then(async connection => {
   }))
   app.use(bodyParser.json());
 
-  sync('src/modules/*/config/*.js').forEach(configPath => {
-    require(resolve(configPath)).default(app);
-  });
+  // sync('src/modules/*/config/*.js').forEach(configPath => {
+  //   require(resolve(configPath)).default(app);
+  // });
+  //
+  // sync('src/modules/*/policies/*.js').forEach(policyPath => {
+  //   require(resolve(policyPath)).invokeRolesPolicies();
+  // });
+  //
+  //
+  // sync('src/modules/*/routes/*.js').forEach(routePath => {
+  //   require(resolve(routePath)).default(app);
+  // });
 
-  sync('src/modules/*/policies/*.js').forEach(policyPath => {
-    require(resolve(policyPath)).invokeRolesPolicies();
-  });
-
-
-  sync('src/modules/*/routes/*.js').forEach(routePath => {
-    require(resolve(routePath)).default(app);
-  });
+  init();
 
   // run app
   app.listen(3000);
