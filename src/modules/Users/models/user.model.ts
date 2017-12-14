@@ -1,5 +1,6 @@
 import {hashSync, compareSync, genSaltSync} from 'bcrypt';
-import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
+import {Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable} from 'typeorm';
+import {Role} from './role.model';
 
 @Entity()
 export class User {
@@ -12,6 +13,10 @@ export class User {
 
   @Column({select: false})
   password: string;
+
+  @ManyToMany(type => Role)
+  @JoinTable()
+  roles: Role[];
 
   generateHash(password) {
     return hashSync(password, genSaltSync(8));

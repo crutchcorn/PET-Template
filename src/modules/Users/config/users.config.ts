@@ -99,8 +99,6 @@ export default function (app) {
       // we are checking to see if the user trying to login already exists
       userRepository
         .createQueryBuilder('row')
-        .select('row.id')
-        .addSelect('row.email')
         .addSelect('row.password')
         .where('row.email = :email', {email: email})
         .getOne().then((user) => {

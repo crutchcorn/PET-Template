@@ -42,3 +42,7 @@ export function signout(req, res) {
   req.logout();
   res.json('Logged out');
 };
+
+export function getUser(req, res) {
+  res.json(req.user);
+}

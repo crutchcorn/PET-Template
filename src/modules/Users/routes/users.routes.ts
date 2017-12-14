@@ -1,15 +1,21 @@
 // import {isAllowed} from '../policies/users.policy';
-import {signup, signin, signout} from '../controllers/users.controller';
-import * as passport from 'passport';
+import {signup, signin, signout, getUser} from '../controllers/users.controller';
+import {roleSaveAction, roleGetAllAction} from '../controllers/roles.controller';
 
 export default function (app) {
-  app.route('/signup')
+  app.route('/api/auth/signup')
     .post(signup);
 
-  // process the login form
-  app.route('/login')
+  app.route('/api/auth/login')
     .post(signin);
 
-  app.route('/logout')
-    .get(signout);
+  app.route('/api/auth/logout')
+    .post(signout);
+
+  app.route('/test')
+    .get(getUser);
+
+  app.route('/role')
+    .post(roleSaveAction)
+    .get(roleGetAllAction);
 };
