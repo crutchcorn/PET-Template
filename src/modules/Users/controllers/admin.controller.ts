@@ -1,0 +1,60 @@
+import * as path from 'path';
+import {Request, Response} from 'express';
+import {getManager} from 'typeorm';
+import {User} from '../models/user.model';
+import {Role} from '../models/role.model';
+// errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller'));
+
+const userRepository = getManager().getRepository(User);
+
+/**
+ * Show the current user
+ */
+export function read(req, res) {
+  res.json(userRepository.findOneById(req.params.userId));
+}
+
+/**
+ * Update a User
+ */
+export async function update(req: Request, res: Response) {
+  const user = await userRepository.findOneById(req.params.userId);
+
+  // For security purposes only merge these parameters
+  user.firstName = req.body.firstName;
+  user.lastName = req.body.lastName;
+  user.displayName = user.firstName + ' ' + user.lastName;
+  user.roles = req.body.roles;
+
+  await userRepository.save(user);
+
+  res.json(user);
+}
+
+/**
+ * Delete a user
+ */
+export async function deleteUser(req: Request, res: Response) {
+  const user = await userRepository.findOneById(req.params.userId);
+
+  await userRepository.remove(user);
+
+  res.json(user);
+}
+
+/**
+ * List of Users
+ */
+export async function list(req: Request, res: Response) {
+  const users = await userRepository.find();
+
+  res.json(users);
+}
+
+/**
+ * User middleware
+ */
+exports.userByID = function (req, res, next, id) {
+  console.log(id);
+  next();
+};
