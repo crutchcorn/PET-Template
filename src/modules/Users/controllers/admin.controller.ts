@@ -1,8 +1,6 @@
-import * as path from 'path';
-import {Request, Response} from 'express';
+import {NextFunction, Request, Response} from 'express';
 import {getManager} from 'typeorm';
 import {User} from '../models/user.model';
-import {Role} from '../models/role.model';
 // errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller'));
 
 const userRepository = getManager().getRepository(User);
@@ -54,7 +52,7 @@ export async function list(req: Request, res: Response) {
 /**
  * User middleware
  */
-exports.userByID = function (req, res, next, id) {
+export function userByID(req: Request, res: Response, next: NextFunction, id: string) {
   console.log(id);
   next();
 };

@@ -1,11 +1,11 @@
 import {hashSync, compareSync, genSaltSync} from 'bcrypt';
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, UpdateDateColumn,
-  CreateDateColumn, getManager
+  CreateDateColumn, getManager, BeforeInsert, BeforeUpdate
 } from 'typeorm';
 import {Role} from './role.model';
 import * as path from 'path';
-const config = require(path.resolve('./config/config'));
+const config = require(path.resolve('./src/config/config'));
 const generatePassword = require('generate-password');
 import {Validator} from "class-validator";
 import * as owasp from 'owasp-password-strength-test';
@@ -113,15 +113,23 @@ export class User {
   @Column()
   resetPasswordExpires: Date;
 
+  @BeforeInsert()
+  @BeforeUpdate()
+  preSave(object: Object, propertyName: string) {
+    console.log(object);
+    console.log(propertyName);
+    console.log(this.email);
+    // if (this.password && this.isModified('password')) {
+    //   this.salt = genSaltSync(8);
+    //   this.password = this.hashPassword(this.password);
+    // }
+  }
+
   /*
   // TODO: Add pre-save and pre-validate hooks
   // http://typeorm.io/#/listeners-and-subscribers
   // TODO: Add salt to pre-save using `genSaltSync(8)`
   UserSchema.pre('save', function (next) {
-    if (this.password && this.isModified('password')) {
-      this.salt = crypto.randomBytes(16).toString('base64');
-      this.password = this.hashPassword(this.password);
-    }
     next();
   });
 
