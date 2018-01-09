@@ -1,3 +1,5 @@
+import {TestConfig} from 'owasp-password-strength-test';
+
 module.exports = {
   app: {
     title: 'PET' as string,
@@ -40,7 +42,7 @@ module.exports = {
   },
   logo: 'modules/core/client/img/brand/logo.png' as string,
   favicon: 'modules/core/client/img/brand/favicon.ico' as string,
-  illegalUsernames: ['meanjs', 'administrator', 'password', 'admin', 'user',
+  illegalUsernames: ['pet', 'administrator', 'password', 'admin', 'user',
     'unknown', 'anonymous', 'null', 'undefined', 'api'
   ] as string[],
   aws: {
@@ -71,7 +73,6 @@ module.exports = {
       minOptionalTestsToPass: 4 as number
     }
   }
-
 } as envDefault;
 
 export interface envDefault {
@@ -124,12 +125,6 @@ export interface envDefault {
     }
   },
   shared: {
-    owasp: {
-      allowPassphrases: boolean,
-        maxLength: number,
-        minLength: number,
-        minPhraseLength: number,
-        minOptionalTestsToPass: number
-    }
+    owasp: Partial<TestConfig>
   }
 }
