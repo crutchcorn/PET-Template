@@ -115,6 +115,7 @@ export class User {
 
   /*
   // TODO: Add pre-save and pre-validate hooks
+  // http://typeorm.io/#/listeners-and-subscribers
   // TODO: Add salt to pre-save using `genSaltSync(8)`
   UserSchema.pre('save', function (next) {
     if (this.password && this.isModified('password')) {
