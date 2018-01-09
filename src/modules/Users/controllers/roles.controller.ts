@@ -14,7 +14,7 @@ export async function roleSaveAction(req: Request, res: Response) {
   const newRole = roleRepository.create(req.body);
 
   // save received post
-  await roleRepository.persist(newRole);
+  await roleRepository.save(newRole);
 
   // return saved post back
   res.send(newRole);
