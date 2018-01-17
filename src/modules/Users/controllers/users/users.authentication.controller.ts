@@ -41,7 +41,7 @@ export async function signup(req: Request, res: Response) {
       res.json(user);
     }
   });
-};
+}
 
 /**
  * Signin after passport authentication
@@ -64,7 +64,7 @@ export function signin(req: Request, res: Response, next: NextFunction) {
       });
     }
   })(req, res, next);
-};
+}
 
 /**
  * Signout
@@ -72,7 +72,7 @@ export function signin(req: Request, res: Response, next: NextFunction) {
 export function signout(req: Request, res: Response) {
   req.logout();
   res.redirect('/');
-};
+}
 
 /**
  * OAuth provider call
@@ -106,7 +106,7 @@ export function oauthCallback(req: Request, res: Response, next: NextFunction) {
       return res.redirect(info.redirect_to || '/');
     });
   })(req, res, next);
-};
+}
 
 export function me(req: Request, res: Response) {
   res.json(req.user);

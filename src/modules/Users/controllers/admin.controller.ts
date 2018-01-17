@@ -9,7 +9,8 @@ const userRepository = getManager().getRepository(User);
  * Show the current user
  */
 export function read(req, res) {
-  res.json(userRepository.findOneById(req.params.userId));
+  userRepository.findOneById(req.params.userId)
+    .then(user => res.json(user));
 }
 
 /**

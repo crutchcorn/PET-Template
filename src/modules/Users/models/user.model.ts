@@ -73,16 +73,16 @@ export class User {
   // TODO: Add validation with validateUsername
   // TODO: trim
   // TODO: required
-  @Column()
+  @Column({unique: true})
   username: string;
 
   @Column({select: false})
   password: string;
 
-  @Column({select: false})
+  @Column({select: false, nullable: true})
   salt: string;
 
-  @Column()
+  @Column({nullable: true})
   profileImageURL: string;
 
   // TODO: required
@@ -106,11 +106,11 @@ export class User {
   @CreateDateColumn()
   created: Date;
 
-  @Column()
+  @Column({nullable: true})
   resetPasswordToken: string;
 
   // TODO: Ensure this works with the Date type
-  @Column()
+  @Column({nullable: true})
   resetPasswordExpires: Date;
 
   @BeforeInsert()
@@ -118,7 +118,7 @@ export class User {
   preSave(object: Object, propertyName: string) {
     console.log(object);
     console.log(propertyName);
-    console.log(this.email);
+    console.log(this.lastName);
     // if (this.password && this.isModified('password')) {
     //   this.salt = genSaltSync(8);
     //   this.password = this.hashPassword(this.password);
