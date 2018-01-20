@@ -3,11 +3,11 @@ import {postSaveAction, postGetByIdAction, postGetAllAction, postByID, setDb} fr
 
 export default function (app) {
   app.route('/api/posts').all(isAllowed, setDb)
-    .get(postGetAllAction)
-    .post(postSaveAction);
+    .get(isAllowed, postGetAllAction)
+    .post(isAllowed, postSaveAction);
 
   app.route('/api/posts/:id').all(isAllowed, setDb)
-    .get(postGetByIdAction);
+    .get(isAllowed, postGetByIdAction);
 
   app.param('id', postByID);
 };

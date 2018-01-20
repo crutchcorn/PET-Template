@@ -25,7 +25,6 @@ module.exports = function () {
               message: 'Invalid username or password (' + (new Date()).toLocaleTimeString() + ')'
             });
           } else {
-            console.log(user);
             done(null, user);
           }
         }).catch(err => done(null, false, {

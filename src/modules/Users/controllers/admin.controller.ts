@@ -54,6 +54,5 @@ export async function list(req: Request, res: Response) {
  * User middleware
  */
 export function userByID(req: Request, res: Response, next: NextFunction, id: string) {
-  console.log(id);
   next();
 };

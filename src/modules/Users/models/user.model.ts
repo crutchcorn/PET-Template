@@ -5,12 +5,14 @@ import {
 } from 'typeorm';
 import {Role} from './role.model';
 import * as path from 'path';
+
 const config = require(path.resolve('./src/config/config'));
 const generatePassword = require('generate-password');
-import {Validator} from "class-validator";
+import {Validator} from 'class-validator';
 import * as owasp from 'owasp-password-strength-test';
 import * as chalk from 'chalk';
 import {Post} from '../../Posts/models/post.model';
+
 const validator = new Validator();
 owasp.config(config.shared.owasp);
 
@@ -25,7 +27,7 @@ const validateLocalStrategyProperty = function (property) {
  * A Validation function for local strategy email
  */
 const validateLocalStrategyEmail = function (email) {
-  return ((this.provider !== 'local' && !this.updated) || validator.isEmail(email, { require_tld: false }));
+  return ((this.provider !== 'local' && !this.updated) || validator.isEmail(email, {require_tld: false}));
 };
 
 
@@ -96,7 +98,7 @@ export class User {
 
   // TODO: Add default of 'User'
   // TODO: Add required validation
-  @ManyToMany(type => Role)
+  @ManyToMany(type => Role, {cascadeUpdate: true, cascadeInsert: true})
   @JoinTable()
   roles: Role[];
 
@@ -135,7 +137,9 @@ export class User {
     const entityManager = getManager();
     entityManager.findOneById(User, this.id)
       .then(user => this.generateSalt(user.password))
-      .catch(err => {throw new Error(`Something went wrong while updating user\n${err}`)});
+      .catch(err => {
+        throw new Error(`Something went wrong while updating user\n${err}`);
+      });
   }
 
   /*

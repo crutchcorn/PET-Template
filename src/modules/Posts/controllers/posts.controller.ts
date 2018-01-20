@@ -56,6 +56,5 @@ export function setDb(req: Request, res: Response, next: Function) {
 }
 
 export function postByID(req: Request, res: Response, next: Function, id: string) {
-  console.log(id);
   next();
 }

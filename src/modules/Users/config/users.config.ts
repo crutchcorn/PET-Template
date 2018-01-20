@@ -18,6 +18,7 @@ export default function (app) {
       .createQueryBuilder('row')
       .addSelect('row.password')
       .addSelect('row.salt')
+      .leftJoinAndSelect("row.roles", "role")
       .where('row.id = :id', {id: id})
       .getOne().then((user) => {
       done(null, user);

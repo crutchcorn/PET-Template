@@ -22,10 +22,14 @@ export async function signup(req: Request, res: Response) {
   // For security measurement we remove the roles from the req.body object
   delete req.body.roles;
 
+  const role = new Role();
+  role.name = 'user';
+
   // Init user and add missing fields
   let user = userRepository.create(Object.assign(
     req.body as User,
     {provider: 'local'},
+    {roles: [role]},
     {displayName: `${req.body.firstName} ${req.body.lastName}`
   }));
 
