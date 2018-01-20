@@ -113,26 +113,33 @@ export class User {
   @Column({nullable: true})
   resetPasswordExpires: Date;
 
+  /**
+   * This should be changed in the future, as searching the DB by ID is horribly optimized. See more in the issue below:
+   * https://github.com/typeorm/typeorm/issues/1459
+   */
+  generateSalt(oldPass?: string) {
+    if (this.password && (!oldPass || oldPass !== this.password)) {
+      this.salt = genSaltSync(8);
+      this.password = this.hashPassword(this.password);
+    }
+  }
+
+
   @BeforeInsert()
+  preSave() {
+    this.generateSalt();
+  }
+
   @BeforeUpdate()
-  preSave(object: Object, propertyName: string) {
-    console.log(object);
-    console.log(propertyName);
-    console.log(this.lastName);
-    // if (this.password && this.isModified('password')) {
-    //   this.salt = genSaltSync(8);
-    //   this.password = this.hashPassword(this.password);
-    // }
+  preUpdate() {
+    const entityManager = getManager();
+    entityManager.findOneById(User, this.id)
+      .then(user => this.generateSalt(user.password))
+      .catch(err => {throw new Error(`Something went wrong while updating user\n${err}`)});
   }
 
   /*
-  // TODO: Add pre-save and pre-validate hooks
-  // http://typeorm.io/#/listeners-and-subscribers
-  // TODO: Add salt to pre-save using `genSaltSync(8)`
-  UserSchema.pre('save', function (next) {
-    next();
-  });
-
+  // TODO: Add pre-validate hooks
   UserSchema.pre('validate', function (next) {
     if (this.provider === 'local' && this.password && this.isModified('password')) {
       var result = owasp.test(this.password);
@@ -218,6 +225,6 @@ export function generateRandomPassphrase(): Promise<string> {
       resolve(password);
     }
   });
-};
+}
 
 // TODO: Add seeding? IDK if I want to or if it's needed

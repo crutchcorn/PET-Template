@@ -52,7 +52,6 @@ export async function postGetAllAction(req: Request, res: Response) {
 }
 
 export function setDb(req: Request, res: Response, next: Function) {
-  console.log("Set DB");
   next();
 }
 
