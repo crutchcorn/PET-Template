@@ -1,10 +1,13 @@
 // var adminPolicy = require('../policies/admin.server.policy'),
 //   admin = require('../controllers/admin.server.controller');
 import * as admin from '../controllers/admin.controller';
+import {me} from '../controllers/users.controller';
 
 export default function (app) {
-  // // User route registration first. Ref: #713
-  // require('./users.server.routes.js')(app);
+  // User route registration first. Ref: meanjs/mean/#713
+  app.route('/api/users/me')
+    .get(me);
+
 
   // Users collection routes
   app.route('/api/users')

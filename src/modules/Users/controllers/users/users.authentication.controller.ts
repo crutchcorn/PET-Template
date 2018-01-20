@@ -4,6 +4,7 @@ import * as passport from 'passport';
 import {getManager} from 'typeorm';
 import {User} from '../../models/user.model';
 import {Role} from '../../models/role.model';
+import * as validator from 'validator';
 // errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
 
 // URLs for which user can't be redirected on signin
@@ -109,9 +110,24 @@ export function oauthCallback(req: Request, res: Response, next: NextFunction) {
 }
 
 export function me(req: Request, res: Response) {
-  res.json(req.user);
-}
+  let safeUserObject = null;
+  if (req.user) {
+    safeUserObject = {
+      displayName: validator.escape(req.user.displayName),
+      provider: validator.escape(req.user.provider),
+      username: validator.escape(req.user.username),
+      created: req.user.created.toString(),
+      roles: req.user.roles,
+      profileImageURL: req.user.profileImageURL,
+      email: validator.escape(req.user.email),
+      lastName: validator.escape(req.user.lastName),
+      firstName: validator.escape(req.user.firstName),
+      additionalProvidersData: req.user.additionalProvidersData
+    };
+  }
 
+  res.json(safeUserObject || null);
+}
 
 // TODO: Fix this up
 /**

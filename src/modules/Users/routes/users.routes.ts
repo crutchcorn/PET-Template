@@ -1,6 +1,7 @@
 // import {isAllowed} from '../policies/users.policy';
 import {signup, signin, signout, me} from '../controllers/users.controller';
 import {roleSaveAction, roleGetAllAction} from '../controllers/roles.controller';
+import {update} from '../controllers/users/users.profile.server.controller';
 
 export default function (app) {
   app.route('/api/auth/signup')
@@ -18,4 +19,8 @@ export default function (app) {
   app.route('/role')
     .post(roleSaveAction)
     .get(roleGetAllAction);
+
+  app.route('/api/users')
+    .put(update);
+
 };

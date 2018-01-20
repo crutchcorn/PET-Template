@@ -18,17 +18,19 @@ module.exports = function () {
           username: usernameOrEmail.toLowerCase(),
           email: usernameOrEmail.toLowerCase()
         })
+        .addSelect('user.password')
         .getOne().then((user) => {
           if (!user || !user.authenticate(password)) {
-            return done(null, false, {
+            done(null, false, {
               message: 'Invalid username or password (' + (new Date()).toLocaleTimeString() + ')'
             });
           } else {
-            return done(null, user);
+            console.log(user);
+            done(null, user);
           }
-        }, (err) => {
-          return done(err);
-        });
+        }).catch(err => done(null, false, {
+        message: "An error occured when trying to signin"
+      }));
     }
   ));
 };
