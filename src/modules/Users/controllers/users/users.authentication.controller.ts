@@ -133,10 +133,10 @@ export function me(req: Request, res: Response) {
   res.json(safeUserObject || null);
 }
 
-// TODO: Fix this up
 /**
  * Helper function to save or update a OAuth user profile
  */
+// TODO: Re-enable this feature
 // export function saveOAuthUserProfile(req, providerUserProfile, done) {
 //   // Setup info and user objects
 //   var info = {};

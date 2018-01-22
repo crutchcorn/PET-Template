@@ -5,8 +5,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {User} from '../../models/user.model';
 import {getManager} from 'typeorm';
-const config = require(path.resolve('./src/config/config'));
+const config: configReturn = require(path.resolve('./src/config/config'));
 import {escape} from 'validator';
+import {configReturn} from '../../../../config/config';
 
 /**
  * Module dependencies
@@ -27,6 +28,7 @@ const whitelistedFields = ['firstName', 'lastName', 'email', 'username'];
 function pick(o, ...props) {
   return Object.assign({}, ...props.map(prop => ({[prop]: o[prop]})));
 }
+
 
 // var useS3Storage = config.uploads.storage === 's3' && config.aws.s3;
 // var s3;
@@ -72,6 +74,7 @@ export async function update(req: Request, res: Response) {
 /**
  * Update profile picture
  */
+// TODO: Re-enable this feature
 // exports.changeProfilePicture = function (req, res) {
 //   var user = req.user;
 //   var existingImageUrl;

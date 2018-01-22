@@ -6,12 +6,13 @@ import {
 import {Role} from './role.model';
 import * as path from 'path';
 
-const config = require(path.resolve('./src/config/config'));
-const generatePassword = require('generate-password');
+const config: configReturn = require(path.resolve('./src/config/config'));
+import {generate} from 'generate-password';
 import {Validator} from 'class-validator';
 import * as owasp from 'owasp-password-strength-test';
 import * as chalk from 'chalk';
 import {Post} from '../../Posts/models/post.model';
+import {configReturn} from '../../../config/config';
 
 const validator = new Validator();
 owasp.config(config.shared.owasp);
@@ -209,7 +210,7 @@ export function generateRandomPassphrase(): Promise<string> {
     // NOTE: Should rarely iterate more than once, but we need this to ensure no repeating characters are present
     while (password.length < 20 || repeatingCharacters.test(password)) {
       // build the random password
-      password = generatePassword.generate({
+      password = generate({
         length: Math.floor(Math.random() * (20)) + 20, // randomize length between 20 and 40 characters
         numbers: true,
         symbols: false,
