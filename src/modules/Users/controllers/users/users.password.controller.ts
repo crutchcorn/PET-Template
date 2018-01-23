@@ -50,18 +50,14 @@ export function forgot(req: Request, res: Response) {
     }
   });
 
-  const generateHTML = (userTokenObj: {user: User, token: string}) => new Promise(async (resolve, reject) => {
+  const generateHTML = (userTokenObj: {user: User, token: string}) => new Promise((resolve, reject) => {
     let httpTransport = 'http://';
     if ((<any>config).secure && (<any>config).secure.ssl === true) {
       httpTransport = 'https://';
     }
     const baseUrl = config.domain || httpTransport + req.headers.host;
-    // TODO: The following will fail as there is no rendering engine set for the server
-    // This is done intentionally, to prevent developers from using the server as a place to
-    // host their templates or anything
 
-    // TODO: Change this to use EJS
-    const emailHTML = await renderFile(pathResolve('./src/modules/users/templates/reset-password-email.html'), {
+    renderFile(pathResolve('./src/modules/users/templates/reset-password-email.html'), {
       name: userTokenObj.user.displayName,
       appName: config.app.title,
       url: baseUrl + '/api/auth/reset/' + userTokenObj.token
@@ -96,108 +92,98 @@ export function forgot(req: Request, res: Response) {
 /**
  * Reset password GET from email token
  */
-// TODO: Re-enable this feature
-// exports.validateResetToken = function (req, res) {
-//   User.findOne({
-//     resetPasswordToken: req.params.token,
-//     resetPasswordExpires: {
-//       $gt: Date.now()
-//     }
-//   }, function (err, user) {
-//     if (err || !user) {
-//       return res.redirect('/password/reset/invalid');
-//     }
-//
-//     res.redirect('/password/reset/' + req.params.token);
-//   });
-// };
+export function validateResetToken(req, res) {
+  userRepository
+    .createQueryBuilder('row')
+    .where('row.resetPasswordToken = :token', {token: req.params.token})
+    .getOne()
+    .then(user => {
+      user.resetPasswordExpires > new Date(Date.now()) ? res.send({token: req.params.token}) :
+                                                         res.status(401).send({message: "Token has expired"})
+    })
+    .catch(err => {res.status(404).send({message: "Token is invalid"})});
+};
 
 /**
  * Reset password POST from email token
  */
-// exports.reset = function (req, res, next) {
-//   // Init Variables
-//   var passwordDetails = req.body;
-//
-//   async.waterfall([
-//
-//     function (done) {
-//       User.findOne({
-//         resetPasswordToken: req.params.token,
-//         resetPasswordExpires: {
-//           $gt: Date.now()
-//         }
-//       }, function (err, user) {
-//         if (!err && user) {
-//           if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
-//             user.password = passwordDetails.newPassword;
-//             user.resetPasswordToken = undefined;
-//             user.resetPasswordExpires = undefined;
-//
-//             user.save(function (err) {
-//               if (err) {
-//                 return res.status(422).send({
-//                   message: errorHandler.getErrorMessage(err)
-//                 });
-//               } else {
-//                 req.login(user, function (err) {
-//                   if (err) {
-//                     res.status(400).send(err);
-//                   } else {
-//                     // Remove sensitive data before return authenticated user
-//                     user.password = undefined;
-//                     user.salt = undefined;
-//
-//                     res.json(user);
-//
-//                     done(err, user);
-//                   }
-//                 });
-//               }
-//             });
-//           } else {
-//             return res.status(422).send({
-//               message: 'Passwords do not match'
-//             });
-//           }
-//         } else {
-//           return res.status(400).send({
-//             message: 'Password reset token is invalid or has expired.'
-//           });
-//         }
-//       });
-//     },
-//     function (user, done) {
-//       res.render('modules/users/server/templates/reset-password-confirm-email', {
-//         name: user.displayName,
-//         appName: config.app.title
-//       }, function (err, emailHTML) {
-//         done(err, emailHTML, user);
-//       });
-//     },
-//     // If valid email, send reset email using service
-//     function (emailHTML, user, done) {
-//       var mailOptions = {
-//         to: user.email,
-//         from: config.mailer.from,
-//         subject: 'Your password has been changed',
-//         html: emailHTML
-//       };
-//
-//       smtpTransport.sendMail(mailOptions, function (err) {
-//         done(err, 'done');
-//       });
-//     }
-//   ], function (err) {
-//     if (err) {
-//       return next(err);
-//     }
-//   });
-// };
+export function reset(req, res) {
+  // Init Variables
+  const passwordDetails = req.body;
+
+  const findUser = new Promise((resolve, reject) => {
+    userRepository
+      .createQueryBuilder('row')
+      .where('row.resetPasswordToken = :token', {token: req.params.token})
+      .getOne()
+      .then(user => {
+        user.resetPasswordExpires > new Date(Date.now()) ? resolve(user) :
+          reject({code: 401, message: 'Password reset token has expired.'})
+      })
+      .catch(err => reject({code: 401, message: 'Password reset token is invalid.'}));
+  });
+
+  const changeUserPass = (user: User) => new Promise((resolve, reject) => {
+    if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
+      user.password = passwordDetails.newPassword;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+
+      userRepository.save(user)
+        .then(userSaved => {
+          req.login(user, function (err) {
+            if (err) {
+              reject({code: 400, message: err});
+            } else {
+              // Remove sensitive data before return authenticated user
+              user.password = undefined;
+              user.salt = undefined;
+
+              res.json(user);
+
+              resolve(user);
+            }
+          });
+        })
+        .catch(err => reject({code: 500, message: err}));
+    } else {
+      reject({code: 422, message: 'Passwords do not match'});
+    }
+  });
+
+  const generateHTML = (user: User) => new Promise((resolve, reject) => {
+    renderFile(pathResolve('./src/modules/users/templates/reset-password-confirm-email.html'), {
+      name: user.displayName,
+      appName: config.app.title,
+    }, (err, str) => err ? reject({code: 500, message: err}) : resolve({html: str, user: User}));
+  });
+
+  const sendEmail = (userHTMLObj: {html: string, user: User}) => new Promise((resolve, reject) => {
+    const mailOptions = {
+      to: userHTMLObj.user.email,
+      from: config.mailer.from,
+      subject: 'Your password has been changed',
+      html: userHTMLObj.html
+    };
+
+    smtpTransport.sendMail(mailOptions, function (err) {
+      err ? reject(err) : resolve("Job well done")
+    });
+  });
+
+  findUser
+    .then(changeUserPass)
+    .then(generateHTML)
+    .then(sendEmail)
+    .catch((err: {message: string, code: number}) => res.status(err && err.code ? err.code : 500).send({
+      message: err.message
+    }));
+};
 
 /**
  * Change Password
  */
+// TODO: Re-enable this feature
 // exports.changePassword = function (req, res, next) {
 //   // Init Variables
 //   var passwordDetails = req.body;

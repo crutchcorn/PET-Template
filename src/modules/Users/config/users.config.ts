@@ -20,11 +20,12 @@ export default function (app) {
       .addSelect('row.salt')
       .leftJoinAndSelect("row.roles", "role")
       .where('row.id = :id', {id: id})
-      .getOne().then((user) => {
-      done(null, user);
-    }, (err) => {
-      done(err, null);
-    });
+      .getOne()
+      .then((user) => {
+        done(null, user);
+      }).catch((err) => {
+        done(err, null);
+      })
   });
 
   // Initialize strategies
