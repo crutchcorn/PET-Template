@@ -121,7 +121,11 @@ export class User {
    * https://github.com/typeorm/typeorm/issues/1459
    */
   generateSalt(oldPass?: string) {
+    console.log(oldPass);
+    console.log(this.password);
+    console.log("There should have been a salt generated");
     if (this.password && (!oldPass || oldPass !== this.password)) {
+      console.log("This generates a new salt");
       this.salt = genSaltSync(8);
       this.password = this.hashPassword(this.password);
     }

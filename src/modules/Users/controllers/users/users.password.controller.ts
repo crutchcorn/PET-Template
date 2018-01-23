@@ -41,6 +41,7 @@ export function forgot(req: Request, res: Response) {
 
             await userRepository.save(user);
 
+            res.send({token: token});
             resolve({user: user, token: token});
           }
         })
@@ -72,7 +73,7 @@ export function forgot(req: Request, res: Response) {
       html: htmlUserObj.html
     };
     smtpTransport.sendMail(mailOptions, function (err) {
-      err ? reject({code: 400, message: 'Failure sending email'}) :
+      err ? reject({code: 400, message: 'Failure sending email'}) : // TODO: Change from throwing a reject to sending an error to an error logger
         resolve('An email has been sent to the provided email with further instructions.')
     });
   });
@@ -80,10 +81,7 @@ export function forgot(req: Request, res: Response) {
   generateToken
     .then(findUser)
     .then(generateHTML)
-    .then(sendEmail)
-    .then(message => {
-      res.send({message: message});
-    })
+    // .then(sendEmail)
     .catch((err: {message: string, code: number}) => res.status(err && err.code ? err.code : 500).send({
       message: err.message
     }));
@@ -107,7 +105,7 @@ export function validateResetToken(req, res) {
 /**
  * Reset password POST from email token
  */
-export function reset(req, res) {
+export function reset(req: Request, res: Response) {
   // Init Variables
   const passwordDetails = req.body;
 
@@ -115,8 +113,11 @@ export function reset(req, res) {
     userRepository
       .createQueryBuilder('row')
       .where('row.resetPasswordToken = :token', {token: req.params.token})
+      .addSelect('row.password')
+      .addSelect('row.salt')
       .getOne()
       .then(user => {
+        console.log(JSON.stringify(user));
         user.resetPasswordExpires > new Date(Date.now()) ? resolve(user) :
           reject({code: 401, message: 'Password reset token has expired.'})
       })
@@ -126,8 +127,9 @@ export function reset(req, res) {
   const changeUserPass = (user: User) => new Promise((resolve, reject) => {
     if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
       user.password = passwordDetails.newPassword;
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      console.log(JSON.stringify(user));
 
       userRepository.save(user)
         .then(userSaved => {
@@ -137,7 +139,6 @@ export function reset(req, res) {
             } else {
               // Remove sensitive data before return authenticated user
               user.password = undefined;
-              user.salt = undefined;
 
               res.json(user);
 
@@ -174,7 +175,7 @@ export function reset(req, res) {
   findUser
     .then(changeUserPass)
     .then(generateHTML)
-    .then(sendEmail)
+    // .then(sendEmail)
     .catch((err: {message: string, code: number}) => res.status(err && err.code ? err.code : 500).send({
       message: err.message
     }));
@@ -184,59 +185,54 @@ export function reset(req, res) {
  * Change Password
  */
 // TODO: Re-enable this feature
-// exports.changePassword = function (req, res, next) {
-//   // Init Variables
-//   var passwordDetails = req.body;
-//
-//   if (req.user) {
-//     if (passwordDetails.newPassword) {
-//       User.findById(req.user.id, function (err, user) {
-//         if (!err && user) {
-//           if (user.authenticate(passwordDetails.currentPassword)) {
-//             if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
-//               user.password = passwordDetails.newPassword;
-//
-//               user.save(function (err) {
-//                 if (err) {
-//                   return res.status(422).send({
-//                     message: errorHandler.getErrorMessage(err)
-//                   });
-//                 } else {
-//                   req.login(user, function (err) {
-//                     if (err) {
-//                       res.status(400).send(err);
-//                     } else {
-//                       res.send({
-//                         message: 'Password changed successfully'
-//                       });
-//                     }
-//                   });
-//                 }
-//               });
-//             } else {
-//               res.status(422).send({
-//                 message: 'Passwords do not match'
-//               });
-//             }
-//           } else {
-//             res.status(422).send({
-//               message: 'Current password is incorrect'
-//             });
-//           }
-//         } else {
-//           res.status(400).send({
-//             message: 'User is not found'
-//           });
-//         }
-//       });
-//     } else {
-//       res.status(422).send({
-//         message: 'Please provide a new password'
-//       });
-//     }
-//   } else {
-//     res.status(401).send({
-//       message: 'User is not signed in'
-//     });
-//   }
-// };
+export function changePassword(req, res) {
+  // Init Variables
+  const passwordDetails = req.body;
+
+  if (req.user) {
+    if (passwordDetails.newPassword) {
+      userRepository.findOneById(req.user.id)
+        .then(user => {
+          if (user.authenticate(passwordDetails.currentPassword)) {
+            if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
+              user.password = passwordDetails.newPassword;
+              userRepository.save(user)
+                .then(userSaved => {
+                  req.login(user, function (err) {
+                    if (err) {
+                      res.status(400).send(err);
+                    } else {
+                      res.send({
+                        message: 'Password changed successfully'
+                      });
+                    }
+                  });
+                })
+                .catch(err => res.status(422).send({
+                  message: err
+                }));
+            } else {
+              res.status(422).send({
+                message: 'Passwords do not match'
+              });
+            }
+          } else {
+            res.status(422).send({
+              message: 'Current password is incorrect'
+            });
+          }
+        })
+        .catch(err => res.status(400).send({
+          message: 'User is not found'
+        }));
+    } else {
+      res.status(422).send({
+        message: 'Please provide a new password'
+      });
+    }
+  } else {
+    res.status(401).send({
+      message: 'User is not signed in'
+    });
+  }
+};
