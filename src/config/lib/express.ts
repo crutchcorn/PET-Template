@@ -95,6 +95,7 @@ export function initMiddleware(app: appType): void {
  */
 export function initSession(app: appType): void {
   // TODO: Check that there is no more MongoDB stuff
+
   // Express MongoDB session storage
   app.use(session({
     saveUninitialized: true,
