@@ -1,7 +1,7 @@
 import {hashSync, compareSync, genSaltSync} from 'bcrypt';
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, UpdateDateColumn,
-  CreateDateColumn, getManager, BeforeInsert, BeforeUpdate
+  CreateDateColumn, getManager, BeforeInsert, BeforeUpdate, getRepository
 } from 'typeorm';
 import {Role} from './role.model';
 import * as path from 'path';
@@ -120,28 +120,50 @@ export class User {
    * This should be changed in the future, as searching the DB by ID is horribly optimized. See more in the issue below:
    * https://github.com/typeorm/typeorm/issues/1459
    */
-  generateSalt(oldPass?: string) {
+  generateSalt(newPass: string, oldPass?: string) {
+    console.log(newPass);
     console.log(oldPass);
-    console.log(this.password);
     console.log("There should have been a salt generated");
-    if (this.password && (!oldPass || oldPass !== this.password)) {
+    if (newPass && (!oldPass || oldPass !== newPass)) {
       console.log("This generates a new salt");
       this.salt = genSaltSync(8);
-      this.password = this.hashPassword(this.password);
+      this.password = this.hashPassword(newPass);
     }
   }
 
 
   @BeforeInsert()
   preSave() {
-    this.generateSalt();
+    getManager().findOneById(User, this.id)
+      .then(newUser => {
+        this.generateSalt(newUser.password);
+      })
+      .catch(err => {
+        throw new Error(`Something went wrong while updating user\n${err}`);
+      });
   }
 
   @BeforeUpdate()
-  preUpdate() {
-    const entityManager = getManager();
-    entityManager.findOneById(User, this.id)
-      .then(user => this.generateSalt(user.password))
+  async preUpdate() {
+      const newUser = await getRepository(User)
+        .createQueryBuilder("user")
+        .addSelect("user.password")
+        .where("user.id = :id", { id: this.id })
+        .getOne();
+
+    getManager()
+      .createQueryBuilder(User, 'user')
+      .addSelect("user.password")
+      .where("user.id = :id", { id: this.id })
+      .getOne()
+      .then(oldUser => {
+        console.log("newUser");
+        console.log(newUser);
+        console.log('oldUser');
+        console.log(oldUser);
+        this.firstName = "Testing how `this` affects the save";
+        // this.generateSalt(newUser.password, oldUser.password);
+      })
       .catch(err => {
         throw new Error(`Something went wrong while updating user\n${err}`);
       });
