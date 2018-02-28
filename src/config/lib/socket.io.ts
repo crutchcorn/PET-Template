@@ -1,27 +1,27 @@
 // Load the module dependencies
 const config = require('../config');
 
-import * as path from 'path';
-import * as fs from 'fs';
+import {resolve} from 'path';
+import {readFileSync} from 'fs';
 import {listen} from 'socket.io';
-import * as http from 'http';
-import * as https from 'https';
+import {createServer as httpServer} from 'http';
+import {createServer as httpsServer} from 'https';
 import * as cookieParser from 'cookie-parser';
-import * as session from 'express-session';
+import {MemoryStore} from 'express-session';
 import * as passport from 'passport';
 import chalk from 'chalk';
+import {Express as appType} from 'express-serve-static-core';
 
 // Define the Socket.io configuration method
-export default function (app, db) {
+export default function (app: appType, store: MemoryStore) {
   let server;
   if (config.secure && config.secure.ssl === true) {
     // Load SSL key and certificate
-    const privateKey = fs.readFileSync(path.resolve(config.secure.privateKey), 'utf8');
-    const certificate = fs.readFileSync(path.resolve(config.secure.certificate), 'utf8');
+    const privateKey = readFileSync(resolve(config.secure.privateKey), 'utf8');
+    const certificate = readFileSync(resolve(config.secure.certificate), 'utf8');
     let caBundle;
-
     try {
-      caBundle = fs.readFileSync(path.resolve(config.secure.caBundle), 'utf8');
+      caBundle = readFileSync(resolve(config.secure.caBundle), 'utf8');
     } catch (err) {
       console.log(chalk.yellow('Warning: couldn\'t find or read caBundle file'));
     }
@@ -60,31 +60,25 @@ export default function (app, db) {
     };
 
     // Create new HTTPS Server
-    server = https.createServer(options, app);
+    server = httpsServer(options, app);
   } else {
     // Create a new HTTP server
-    server = http.createServer(app);
+    server = httpServer(app);
   }
   // Create a new Socket.io server
   const io = listen(server);
 
-  // Create a MongoDB storage object
-  var mongoStore = new MongoStore({
-    db: db,
-    collection: config.sessionCollection
-  });
-
   // Intercept Socket.io's handshake request
   io.use(function (socket, next) {
     // Use the 'cookie-parser' module to parse the request cookies
-    cookieParser(config.sessionSecret)(socket.request, {}, function (err) {
+    (<any>cookieParser(config.sessionSecret))(socket.request, {}, function (err) {
       // Get the session id from the request cookies
-      var sessionId = socket.request.signedCookies ? socket.request.signedCookies[config.sessionKey] : undefined;
+      const sessionId = socket.request.signedCookies ? socket.request.signedCookies[config.sessionKey] : undefined;
 
       if (!sessionId) return next(new Error('sessionId was not found in socket.request'));
 
       // Use the mongoStorage instance to get the Express session information
-      mongoStore.get(sessionId, function (err, session) {
+      store.get(sessionId, function (err, session) {
         if (err) return next(err);
         if (!session) return next(new Error('session was not found for ' + sessionId));
 
@@ -92,7 +86,7 @@ export default function (app, db) {
         socket.request.session = session;
 
         // Use Passport to populate the user details
-        passport.initialize()(socket.request, {}, function () {
+        (<any>passport.initialize())(socket.request, {}, function () {
           passport.session()(socket.request, {}, function () {
             if (socket.request.user) {
               next();
@@ -108,7 +102,7 @@ export default function (app, db) {
   // Add an event listener to the 'connection' event
   io.on('connection', function (socket) {
     config.files.server.sockets.forEach(function (socketConfiguration) {
-      require(path.resolve(socketConfiguration))(io, socket);
+      require(resolve(socketConfiguration)).default(io, socket);
     });
   });
 

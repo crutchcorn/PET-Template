@@ -13,7 +13,7 @@ import * as _ from 'lodash';
 import * as morgan from 'morgan';
 import * as cookieParser from 'cookie-parser';
 import {Request, Response, NextFunction} from 'express';
-import {Express as appType} from "express-serve-static-core";
+import {Express as appType} from 'express-serve-static-core';
 
 const config = require('../config');
 const flash = require('connect-flash');
@@ -93,10 +93,8 @@ export function initMiddleware(app: appType): void {
 /**
  * Configure Express session
  */
-export function initSession(app: appType): void {
-  // TODO: Check that there is no more MongoDB stuff
-
-  // Express MongoDB session storage
+export function initSession(app: appType, store: session.MemoryStore): void {
+  // Express session storage
   app.use(session({
     saveUninitialized: true,
     resave: true,
@@ -106,7 +104,8 @@ export function initSession(app: appType): void {
       httpOnly: config.sessionCookie.httpOnly,
       secure: config.sessionCookie.secure && config.secure.ssl
     },
-    name: config.sessionKey
+    name: config.sessionKey,
+    store: store
   }));
 
   // Add Lusca CSRF Middleware
@@ -175,40 +174,56 @@ export function initErrorRoutes(app: appType): void {
     console.error(err.stack);
 
     // Redirect to error page
-    res.status(500).json({"message": err});
+    res.status(500).json({'message': err});
   });
+};
+
+
+/**
+ * Configure Socket.io
+ */
+export function configureSocketIO(app: appType, store: session.MemoryStore) {
+  // Load the Socket.io configuration
+  var server = require('./socket.io')(app, store);
+
+  // Return server object
+  return server;
 };
 
 /**
  * Initialize the Express application
  */
 export function init(): appType {
-    // Initialize express app
-    var app: appType = express();
+  // Initialize express app
+  var app: appType = express();
+  const store = new session.MemoryStore;
 
-    // Initialize local variables
-    this.initLocalVariables(app);
+  // Initialize local variables
+  this.initLocalVariables(app);
 
-    // Initialize Express middleware
-    this.initMiddleware(app);
+  // Initialize Express middleware
+  this.initMiddleware(app);
 
-    // Initialize Helmet security headers
-    this.initHelmetHeaders(app);
+  // Initialize Helmet security headers
+  this.initHelmetHeaders(app);
 
-    // Initialize Express session
-    this.initSession(app);
+  // Initialize Express session
+  this.initSession(app, store);
 
-    // Initialize Modules configuration
-    this.initModulesConfiguration(app);
+  // Initialize Modules configuration
+  this.initModulesConfiguration(app);
 
-    // Initialize modules server authorization policies
-    this.initModulesServerPolicies();
+  // Initialize modules server authorization policies
+  this.initModulesServerPolicies();
 
-    // Initialize modules server routes
-    this.initModulesServerRoutes(app);
+  // Initialize modules server routes
+  this.initModulesServerRoutes(app);
 
-    // Initialize error routes
-    this.initErrorRoutes(app);
+  // Initialize error routes
+  this.initErrorRoutes(app);
 
-    return app;
+  // Configure Socket.io
+  app = this.configureSocketIO(app, store);
+
+  return app;
 }
