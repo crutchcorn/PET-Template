@@ -8,37 +8,56 @@ const userRepository = getManager().getRepository(User);
 /**
  * Show the current user
  */
-export function read(req, res) {
-  userRepository.findOneById(req.params.userId)
-    .then(user => res.json(user));
+export async function read(req, res) {
+  try {
+    const user = await userRepository.findOneById(req.params.userId);
+    res.json(user);
+  } catch (err) {
+    res.status(500).send({message: 'Could not read the current user'});
+  }
 }
 
 /**
  * Update a User
  */
 export async function update(req: Request, res: Response) {
-  const user = await userRepository.findOneById(req.params.userId);
+  userRepository.findOneById(req.params.userId)
+    .then(user => {
+      if (user) {
+        // For security purposes only merge these parameters
+        user.firstName = req.body.firstName;
+        user.lastName = req.body.lastName;
+        user.displayName = user.firstName + ' ' + user.lastName;
+        user.roles = req.body.roles;
 
-  // For security purposes only merge these parameters
-  user.firstName = req.body.firstName;
-  user.lastName = req.body.lastName;
-  user.displayName = user.firstName + ' ' + user.lastName;
-  user.roles = req.body.roles;
-
-  await userRepository.save(user);
-
-  res.json(user);
+        userRepository.save(user)
+          .then(user => res.json(user))
+          .catch(err => res.status(500).send({message: 'There was an error updating the user'}));
+      } else {
+        res.status(404).send({message: 'Could\'nt find a user with that ID'});
+      }
+    })
+    .catch(err => res.status(500).send({message: 'There was an error updating the user'}));
 }
 
 /**
  * Delete a user
  */
-export async function deleteUser(req: Request, res: Response) {
-  const user = await userRepository.findOneById(req.params.userId);
-
-  await userRepository.remove(user);
-
-  res.json(user);
+export function deleteUser(req: Request, res: Response) {
+  userRepository.findOneById(req.params.userId)
+    .then(async (user) => {
+      if (user) {
+        try {
+          await userRepository.remove(user);
+          res.json(user);
+        } catch (err) {
+          res.status(500).send({message: 'There was an error deleting that user'});
+        }
+      } else {
+        res.status(404).send({message: 'Couldn\'t find a user with that ID'});
+      }
+    })
+    .catch(err => res.status(500).send({message: 'There was an error finding that user'}));
 }
 
 /**

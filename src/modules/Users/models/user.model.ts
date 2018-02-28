@@ -1,21 +1,20 @@
 import {hashSync, compareSync, genSaltSync} from 'bcrypt';
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, UpdateDateColumn,
-  CreateDateColumn, getManager, BeforeInsert, BeforeUpdate, getRepository
+  CreateDateColumn, getManager, BeforeInsert, BeforeUpdate, getRepository, OneToMany
 } from 'typeorm';
 import {Role} from './role.model';
-import * as path from 'path';
+import {resolve} from 'path';
 
-const config: configReturn = require(path.resolve('./src/config/config'));
+const config: configReturn = require(resolve('./src/config/config'));
 import {generate} from 'generate-password';
 import {Validator} from 'class-validator';
-import * as owasp from 'owasp-password-strength-test';
-import * as chalk from 'chalk';
+import {config as owaspConfig, test} from 'owasp-password-strength-test';
 import {Post} from '../../Posts/models/post.model';
 import {configReturn} from '../../../config/config';
 
 const validator = new Validator();
-owasp.config(config.shared.owasp);
+owaspConfig(config.shared.owasp);
 
 /**
  * A Validation function for local strategy properties
@@ -116,6 +115,9 @@ export class User {
   @Column({nullable: true})
   resetPasswordExpires: Date;
 
+  @OneToMany(type => Post, post => post.user)
+  posts: Post[];
+
   /**
    * This should be changed in the future, as searching the DB by ID is horribly optimized. See more in the issue below:
    * https://github.com/typeorm/typeorm/issues/1459
@@ -211,13 +213,17 @@ export async function findUniqueUsername(username: string, suffix: number, callb
   const userRepository = getManager().getRepository(User);
 
   // load a post by a given post id
-  const user = await userRepository.findOne({username: possibleUsername});
+  try {
+    const user = await userRepository.findOne({username: possibleUsername});
 
-  // if post was not found return 404 to the client
-  if (!user) {
-    callback(possibleUsername);
-  } else {
-    return this.findUniqueUsername(username, (suffix || 0) + 1, callback);
+    // if post was not found return 404 to the client
+    if (!user) {
+      callback(possibleUsername);
+    } else {
+      return this.findUniqueUsername(username, (suffix || 0) + 1, callback);
+    }
+  } catch (err) {
+    // res.status(500).send({message: "There was an error trying to find a user with that username"});
   }
 };
 
@@ -249,7 +255,7 @@ export function generateRandomPassphrase(): Promise<string> {
     }
 
     // Send the rejection back if the passphrase fails to pass the strength test
-    if (owasp.test(password).errors.length) {
+    if (test(password).errors.length) {
       reject(new Error('An unexpected problem occured while generating the random passphrase'));
     } else {
       // resolve with the validated passphrase

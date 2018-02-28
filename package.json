@@ -1,28 +1,28 @@
 {
-  "name": "typeorm-typescript-express-example",
+  "name": "pet-template",
   "version": "0.0.1",
-  "description": "Example how to use Express and TypeORM with TypeScript.",
+  "description": "A Passport Express TypeORM backend server template",
   "pet-version": "0.0.1",
   "license": "MIT",
   "readmeFilename": "README.md",
   "author": {
-    "name": "Umed Khudoiberdiev",
-    "email": "pleerock.me@gmail.com"
+    "name": "Corbin Crutchley",
+    "email": "crutchcorn@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/typeorm/typescript-express-example.git"
+    "url": "https://github.com/crutchcorn/pet-template.git"
   },
   "bugs": {
-    "url": "https://github.com/typeorm/typescript-express-example/issues"
+    "url": "https://github.com/crutchcorn/pet-template/issues"
   },
   "tags": [
-    "orm",
     "typescript",
-    "typescript-orm",
-    "typeorm-sample",
-    "typeorm-example",
-    "typeorm-express-example"
+    "passport",
+    "template",
+    "express",
+    "MEAN",
+    "MEANJS"
   ],
   "devDependencies": {
     "@types/acl": "^0.4.34",
@@ -46,6 +46,7 @@
     "@types/passport": "^0.4.2",
     "@types/passport-local": "^1.0.32",
     "@types/serve-favicon": "^2.2.30",
+    "@types/socket.io": "^1.4.31",
     "@types/validator": "^6.3.0",
     "@types/winston": "^2.3.7",
     "typescript": "^2.6.2"
@@ -76,6 +77,7 @@
     "pg": "^7.4.1",
     "reflect-metadata": "^0.1.12",
     "serve-favicon": "^2.4.5",
+    "socket.io": "^2.0.4",
     "typeorm": "^0.1.11",
     "validator": "^9.2.0",
     "winston": "^2.4.0"

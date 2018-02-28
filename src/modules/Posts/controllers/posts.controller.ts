@@ -2,59 +2,68 @@ import {Request, Response} from 'express';
 import {getManager} from 'typeorm';
 import {Post} from '../models/post.model';
 
+export interface PostRequest extends Request {
+  post?: Post
+}
+
+const postRepository = getManager().getRepository(Post);
+
 /**
  * Saves given post.
  */
+
 export async function postSaveAction(req: Request, res: Response) {
-
-  // get a post repository to perform operations with post
-  const postRepository = getManager().getRepository(Post);
-
-  // create a real post object from post json object sent over http
-  const newPost = postRepository.create(req.body);
-
-  // save received post
-  await postRepository.save(newPost);
-
-  // return saved post back
-  res.send(newPost);
+  const newPost = postRepository.create({
+    ...req.body,
+    user: req.user
+  });
+  postRepository.save(newPost)
+    .then(post => res.send(post))
+    .catch(err => res.status(500).send({message: 'There was an error with saving the post'}));
 }
 
-export async function postGetByIdAction(req: Request, res: Response) {
+export function postGetByIdAction(req: PostRequest, res: Response) {
+  res.send(req.post);
+}
 
-  // get a post repository to perform operations with post
-  const postRepository = getManager().getRepository(Post);
 
-  // load a post by a given post id
-  const post = await postRepository.findOneById(req.params.id);
-
-  // if post was not found return 404 to the client
-  if (!post) {
-    res.status(404);
-    res.end();
-    return;
+export async function postUpdateAction(req: PostRequest, res: Response) {
+  // TODO: Model is not returning any data
+  try {
+    const updatedPost = await postRepository.updateById(req.post.id, {
+      ...req.body,
+      user: undefined
+    });
+    res.send(updatedPost);
+  } catch (err) {
+    res.status(500).send({message: 'There was an error while updating the post'});
   }
+}
 
-  // return loaded post
-  res.send(post);
+export async function postDeleteAction(req: PostRequest, res: Response) {
+  try {
+    await postRepository.delete(req.post);
+    res.send({message: 'Post was deleted'});
+  } catch (err) {
+    res.status(500).send({message: 'There was an error trying to delete the post'});
+  }
 }
 
 export async function postGetAllAction(req: Request, res: Response) {
-
-  // get a post repository to perform operations with post
-  const postRepository = getManager().getRepository(Post);
-
-  // load a post by a given post id
-  const posts = await postRepository.find();
-
-  // return loaded posts
-  res.send(posts);
+  postRepository.find()
+    .then(posts => res.send(posts))
+    .catch(err => res.status(500).send({message: 'There was an error getting posts'}));
 }
 
-export function setDb(req: Request, res: Response, next: Function) {
-  next();
-}
-
-export function postByID(req: Request, res: Response, next: Function, id: string) {
-  next();
+export async function postByID(req: PostRequest, res: Response, next: Function, id: string) {
+  postRepository.findOneById(id)
+    .then(post => {
+      if (!post) {
+        res.status(404).send({message: 'Couldn\'t find a post with that ID'});
+      } else {
+        req.post = post;
+        next();
+      }
+    })
+    .catch(err => res.status(500).send({message: 'There was an error finding that post'}));
 }

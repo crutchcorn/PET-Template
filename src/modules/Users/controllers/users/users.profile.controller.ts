@@ -55,15 +55,19 @@ export async function update(req: Request, res: Response) {
 
     user.displayName = user.firstName + ' ' + user.lastName;
 
-    user = await userRepository.save(user);
+    try {
+      user = await userRepository.save(user);
 
-    req.login(user, function (err) {
-      if (err) {
-        res.status(400).send(err);
-      } else {
-        res.json(user);
-      }
-    });
+      req.login(user, function (err) {
+        if (err) {
+          res.status(400).send(err);
+        } else {
+          res.json(user);
+        }
+      });
+    } catch (err) {
+      res.status(500).send('There was an error trying to update the user');
+    }
   } else {
     res.status(401).send({
       message: 'User is not signed in'

@@ -14,20 +14,20 @@ export async function roleSaveAction(req: Request, res: Response) {
   const newRole = roleRepository.create(req.body);
 
   // save received post
-  await roleRepository.save(newRole);
-
-  // return saved post back
-  res.send(newRole);
+  try {
+    await roleRepository.save(newRole);
+    res.send(newRole);
+  } catch (err) {
+    res.status(500).send({message: "There was an error saving the role"});
+  }
 }
 
 export async function roleGetAllAction(req: Request, res: Response) {
-
-  // get a post repository to perform operations with post
   const roleRepository = getManager().getRepository(Role);
-
-  // load a post by a given post id
-  const roles = await roleRepository.find();
-
-  // return loaded posts
-  res.send(roles);
+  try {
+    const roles = await roleRepository.find();
+    res.send(roles);
+  } catch (err) {
+    res.status(500).send({message: 'There was an error finding that role'});
+  }
 }

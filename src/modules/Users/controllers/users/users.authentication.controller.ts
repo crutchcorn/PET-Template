@@ -31,21 +31,25 @@ export async function signup(req: Request, res: Response) {
     {provider: 'local'},
     {roles: [role]},
     {displayName: `${req.body.firstName} ${req.body.lastName}`
-  }));
+    }));
 
   // Then save the user
-  await userRepository.save(user);
+  try {
+    await userRepository.save(user);
+    user.password = undefined;
+    user.salt = undefined;
 
-  user.password = undefined;
-  user.salt = undefined;
+    req.login(user, function (err) {
+      if (err) {
+        res.status(400).send(err);
+      } else {
+        res.json(user);
+      }
+    });
+  } catch (err) {
+    res.status(500).send({message: "There was a problem signing up that user"});
+  }
 
-  req.login(user, function (err) {
-    if (err) {
-      res.status(400).send(err);
-    } else {
-      res.json(user);
-    }
-  });
 }
 
 /**
@@ -76,7 +80,7 @@ export function signin(req: Request, res: Response, next: NextFunction) {
  */
 export function signout(req: Request, res: Response) {
   req.logout();
-  res.redirect('/');
+  res.send({message: 'Logged out successfully'});
 }
 
 /**

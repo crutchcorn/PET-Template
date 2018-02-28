@@ -26,7 +26,7 @@ export function forgot(req: Request, res: Response) {
       const usernameOrEmail = String(req.body.usernameOrEmail).toLowerCase();
 
       userRepository
-      .createQueryBuilder('user')
+        .createQueryBuilder('user')
         .where('user.username = :username OR user.email = :email', {
           username: usernameOrEmail.toLowerCase(),
           email: usernameOrEmail.toLowerCase()
@@ -39,14 +39,18 @@ export function forgot(req: Request, res: Response) {
             user.resetPasswordToken = token;
             user.resetPasswordExpires = new Date(Date.now() + 3600000); // 1 hour
 
-            await userRepository.save(user);
-
-            res.send({token: token});
-            resolve({user: user, token: token});
+            try {
+              await userRepository.save(user);
+              res.send({token: token});
+              resolve({user: user, token: token});
+            } catch (err) {
+              res.status(500).send({message: "There was an error trying to find the token"});
+              reject(err)
+            }
           }
         })
         .catch(err => reject({code: 400, message: 'No account with that username or email has been found'}));
-      } else {
+    } else {
       reject({code: 422, message: 'Username/email field must not be blank'})
     }
   });
@@ -97,7 +101,7 @@ export function validateResetToken(req, res) {
     .getOne()
     .then(user => {
       user.resetPasswordExpires > new Date(Date.now()) ? res.send({token: req.params.token}) :
-                                                         res.status(401).send({message: "Token has expired"})
+        res.status(401).send({message: "Token has expired"})
     })
     .catch(err => {res.status(404).send({message: "Token is invalid"})});
 };

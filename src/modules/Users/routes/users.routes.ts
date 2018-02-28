@@ -1,5 +1,5 @@
 // import {isAllowed} from '../policies/users.policy';
-import {update} from '../controllers/users/users.profile.server.controller';
+import {update} from '../controllers/users/users.profile.controller';
 import {changePassword} from '../controllers/users/users.password.controller';
 
 export default function (app) {

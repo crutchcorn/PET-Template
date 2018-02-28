@@ -2,7 +2,7 @@
  * Module dependencies.
  */
 import * as _ from 'lodash';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import {sync} from 'glob';
 import {existsSync} from 'fs';
 import {resolve, join} from 'path';
@@ -61,21 +61,21 @@ const validateEnvironmentVariable = function (): void {
   console.log();
   if (!environmentFiles.length) {
     if (process.env.NODE_ENV) {
-      console.error((<any>chalk).red('+ Error: No configuration file found for "' + process.env.NODE_ENV + '" environment using development instead'));
+      console.error(chalk.red('+ Error: No configuration file found for "' + process.env.NODE_ENV + '" environment using development instead'));
     } else {
-      console.error((<any>chalk).red('+ Error: NODE_ENV is not defined! Using default development environment'));
+      console.error(chalk.red('+ Error: NODE_ENV is not defined! Using default development environment'));
     }
     process.env.NODE_ENV = 'development';
   }
   // Reset console color
-  console.log((<any>chalk).white(''));
+  console.log(chalk.white(''));
 };
 
 /** Validate config.domain is set
  */
 const validateDomainIsSet = function (config): void {
   if (!config.domain) {
-    console.log((<any>chalk).red('+ Important warning: config.domain is empty. It should be set to the fully qualified domain of the app.'));
+    console.log(chalk.red('+ Important warning: config.domain is empty. It should be set to the fully qualified domain of the app.'));
   }
 };
 
@@ -93,8 +93,8 @@ const validateSecureMode = function (config): true | void {
   var certificate = existsSync(resolve(config.secure.certificate));
 
   if (!privateKey || !certificate) {
-    console.log((<any>chalk).red('+ Error: Certificate file or key file is missing, falling back to non-SSL mode'));
-    console.log((<any>chalk).red('  To create them, simply run the following from your shell: sh ./scripts/generate-ssl-certs.sh'));
+    console.log(chalk.red('+ Error: Certificate file or key file is missing, falling back to non-SSL mode'));
+    console.log(chalk.red('  To create them, simply run the following from your shell: sh ./scripts/generate-ssl-certs.sh'));
     console.log();
     config.secure.ssl = false;
   }
@@ -111,9 +111,9 @@ const validateSessionSecret = function (config, testing?: boolean): boolean {
 
   if (config.sessionSecret === 'MEAN') {
     if (!testing) {
-      console.log((<any>chalk).red('+ WARNING: It is strongly recommended that you change sessionSecret config while running in production!'));
-      console.log((<any>chalk).red('  Please add `sessionSecret: process.env.SESSION_SECRET || \'super amazing secret\'` to '));
-      console.log((<any>chalk).red('  `config/env/production.js` or `config/env/local.js`'));
+      console.log(chalk.red('+ WARNING: It is strongly recommended that you change sessionSecret config while running in production!'));
+      console.log(chalk.red('  Please add `sessionSecret: process.env.SESSION_SECRET || \'super amazing secret\'` to '));
+      console.log(chalk.red('  `config/env/production.js` or `config/env/local.js`'));
       console.log();
     }
     return false;

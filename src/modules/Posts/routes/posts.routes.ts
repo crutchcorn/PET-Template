@@ -1,13 +1,17 @@
 import {isAllowed} from '../policies/posts.policy';
-import {postSaveAction, postGetByIdAction, postGetAllAction, postByID, setDb} from '../controllers/posts.controller';
+import {
+  postSaveAction, postGetByIdAction, postGetAllAction, postByID, postDeleteAction, postUpdateAction
+} from '../controllers/posts.controller';
 
 export default function (app) {
-  app.route('/api/posts').all(isAllowed, setDb)
-    .get(isAllowed, postGetAllAction)
-    .post(isAllowed, postSaveAction);
+  app.route('/api/posts').all(isAllowed)
+    .get(postGetAllAction)
+    .post(postSaveAction);
 
-  app.route('/api/posts/:id').all(isAllowed, setDb)
-    .get(isAllowed, postGetByIdAction);
+  app.route('/api/posts/:postId').all(isAllowed)
+    .get(postGetByIdAction)
+    .put(postUpdateAction)
+    .delete(postDeleteAction);
 
-  app.param('id', postByID);
+  app.param('postId', postByID);
 };
