@@ -1,26 +1,6 @@
-# Rucksack Angular
+# {{titleCase projectName}}
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.6.6.
-
-## TODO
-- [ ] Add cookie for express session
-- [ ] Add store for auth with `expires` for session, use auth http interceptor to update `expires` to `Date.now()`, subscribe to change in `app.component.ts` and then, 10 minutes before the expire time, pop up a dialog that asks user to confirm they are still active. If they select `yes`, query `/api/users/me` and run the following code:
-
-```typescript
-
-let subject = new Rx.Subject();
-ngOnInit() {
-  this.subject
-    .switchMap(period => Rx.Observable.interval(period))
-    .do(() => /*Do your dialog confirm here*/))
-    .take(1)
-    .subscribe();
-  this.subject.next(1000*60*50) // 10 mins less than an hour
-  // Run the `this.subject.next(interval)` command for every store update
-}
-
-
-```
 
 ## Getting started
 

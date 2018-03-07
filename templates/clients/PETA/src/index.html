@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Rucksack Angular</title>
+  <title>{{titleCase projectName}}</title>
   <base href="/">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,10 +13,10 @@
   <meta name="theme-color" content="#00c08b">
 </head>
 <body style="margin: 0">
-  <rucksack-root></rucksack-root>
+  <{{dashCase projectName}}-root></{{dashCase projectName}}-root>
   <noscript>
     <div style="display:table; height: 100vh; width: 100vw;">
-      <p style="display:table-cell; vertical-align: middle; text-align: center">Sorry, JavaScript must be enabled to use Rucksack</p>
+      <p style="display:table-cell; vertical-align: middle; text-align: center">Sorry, JavaScript must be enabled to use {{titleCase projectName}}</p>
     </div>
   </noscript>
 </body>

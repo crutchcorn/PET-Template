@@ -1,6 +1,6 @@
 {
-  "name": "Rucksack",
-  "short_name": "Rucksack",
+  "name": "{{titleCase projectName}}",
+  "short_name": "{{titleCase projectName}}",
   "theme_color": "#00c08b",
   "background_color": "#051c2c",
   "start_url": "/",

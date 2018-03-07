@@ -6,6 +6,6 @@ export class AppPage {
   }
 
   getParagraphText() {
-    return element(by.css('rucksack-root h1')).getText();
+    return element(by.css('{{dashCase projectName}}-root h1')).getText();
   }
 }

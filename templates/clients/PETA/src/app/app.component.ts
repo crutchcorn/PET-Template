@@ -9,7 +9,7 @@ import {MatDialog, MatDialogRef} from '@angular/material';
 import {UserService} from './core/user/user.service';
 
 @Component({
-  selector: 'rucksack-stay-logged-in-dialog',
+  selector: '{{dashCase projectName}}-stay-logged-in-dialog',
   template: `
     <h1 mat-dialog-title>Timeout Warning</h1>
     <div mat-dialog-content>
@@ -28,7 +28,7 @@ export class StayLoggedInDialogComponent {
 }
 
 @Component({
-  selector: 'rucksack-root',
+  selector: '{{dashCase projectName}}-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

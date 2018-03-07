@@ -1,6 +1,6 @@
 import { AppPage } from './app.po';
 
-describe('rucksack-angular App', () => {
+describe('{{dashCase projectName}} App', () => {
   let page: AppPage;
 
   beforeEach(() => {
@@ -9,6 +9,6 @@ describe('rucksack-angular App', () => {
 
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getParagraphText()).toEqual('Welcome to rucksack!');
+    expect(page.getParagraphText()).toEqual('Welcome to {{lowerCase projectName}}!');
   });
 });

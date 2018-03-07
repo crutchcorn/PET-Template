@@ -1,6 +1,6 @@
 {
-  "name": "rucksack-angular",
-  "version": "0.0.0",
+  "name": "{{dashCase projectName}}",
+  "version": "0.0.1",
   "license": "MIT",
   "scripts": {
     "ng": "ng",

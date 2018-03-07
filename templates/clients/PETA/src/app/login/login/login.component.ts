@@ -6,7 +6,7 @@ import {Store} from '@ngrx/store';
 import {Router} from '@angular/router';
 
 @Component({
-  selector: 'rucksack-login',
+  selector: '{{dashCase projectName}}-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -17,7 +17,7 @@ export class LoginComponent {
   }
 
   login() {
-    this.authService.login('crutchcorn5', '***REMOVED***')
+    this.authService.login('test', 'test')
       .subscribe(user => {
         this.router.navigate(['/posts']);
       });

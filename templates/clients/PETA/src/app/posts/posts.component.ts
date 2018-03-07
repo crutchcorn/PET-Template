@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'rucksack-posts',
+  selector: '{{dashCase projectName}}-posts',
   templateUrl: './posts.component.html',
   styleUrls: ['./posts.component.scss']
 })

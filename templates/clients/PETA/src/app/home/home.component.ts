@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 
 @Component({
-  selector: 'rucksack-home',
+  selector: '{{dashCase projectName}}-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
