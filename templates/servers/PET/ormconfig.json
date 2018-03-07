@@ -1,0 +1,25 @@
+[
+  {
+    "name": "default",
+    "type": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "test",
+    "password": "test",
+    "database": "test",
+    "autoSchemaSync": true,
+    "entities": [
+      "src/modules/**/models/*.js"
+    ],
+    "subscribers": [
+      "src/subscriber/*.js,"
+    ],
+    "migrations": [
+      "src/migration/*.js"
+    ],
+    "cli": {
+      "migrationsDir": "src/migration",
+      "subscribersDir": "src/subscriber"
+    }
+  }
+]

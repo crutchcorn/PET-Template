@@ -1,20 +1,8 @@
+src/**/*.js
+src/**/*.js.map
 
-# Created by https://www.gitignore.io/api/node,linux,macos,windows,webstorm
 
-### Linux ###
-*~
-
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
-
-# KDE directory preferences
-.directory
-
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
-
-# .nfs files are created when an open file is removed but is still being accessed
-.nfs*
+# Created by https://www.gitignore.io/api/node,macos,windows,webstorm
 
 ### macOS ###
 *.DS_Store
@@ -109,6 +97,7 @@ typings/
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
+.idea/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
@@ -149,9 +138,6 @@ atlassian-ide-plugin.xml
 # Cursive Clojure plugin
 .idea/replstate.xml
 
-# Ruby plugin and RubyMine
-/.rakeTasks
-
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
@@ -167,7 +153,7 @@ fabric.properties
 # *.ipr
 
 # Sonarlint plugin
-.idea
+.idea/sonarlint
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -190,5 +176,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-
-# End of https://www.gitignore.io/api/node,linux,macos,windows,webstorm
+# End of https://www.gitignore.io/api/node,macos,windows,webstorm
