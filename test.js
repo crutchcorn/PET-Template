@@ -71,22 +71,46 @@ const newObj = ks.reduce((arr, key, index, keys) => {
 }, {})
 
 
-/* {
-	client: [],
-	server: [],
+/* obj = {
+	client: [[]],
+	server: [[]],
 	options: [['client'], ['server']],
 	network: [['client', 'options'], ['server', 'options']],
     ajax: [['client', 'options', 'network']]
 }; */
 
+/* keys = ['client', 'network', 'options'] */
 
 const any = xs => xs.reduce((acc, x) => acc || x, false)
 const all = xs => xs.reduce((acc, x) => acc && x, true)
 
 const bfs = (obj, keys) => {
-	let seen = [];
+    newObj = Object.keys(obj).reduce((arr, key) => {return {...arr, [key]: obj[key].map(arr => [...arr, key])}}, {})
 
-	const go = key => {
+    /*[
+        { "client": [false] },
+        { "server": [false] },
+        { "options": [false, false] },
+        { "network": [true, false] },
+        { "ajax": [false] }
+    ]*/
+    const findMap = (arrComp = 'every', compareFn = ((arrLen, subArrLen) => arrLen < subArrLen)) =>
+        ks.map(key => {
+            return {
+                [key]: obj[key].map(subArr => compareFn(keys.length, subArr.length) ?
+                                                Array.prototype[arrComp].bind(subArr)(item => arr.find(find => find === item)) :
+                                                false)
+            }
+        })
+
+
+    match = findMap()
+    matchChildren = findMap('some', (arrLen, subArrLen) => arrLen < subArrLen)
+
+
+
+
+     const go = key => {
 		seen.push(key);
 		return (key in keys) && any(obj[key].map(opts => opts.filter(x => !(seen.find(x))).map(go)));
 	}
