@@ -6,7 +6,7 @@ import {Store} from '@ngrx/store';
 import {Router} from '@angular/router';
 
 @Component({
-  selector: '{{dashCase projectName}}-login',
+  selector: '{{dashCase name}}-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })

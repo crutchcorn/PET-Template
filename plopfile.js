@@ -3,34 +3,36 @@ module.exports = function (plop) {
   plop.setGenerator('generate', {
     prompts: [{
       type: 'input',
-      name: 'projectName',
+      name: 'name',
       message: 'Please input the name of your program:'
     }, {
       type: 'confirm',
-      name: 'wantServer',
+      name: 'server',
       message: 'Do you want to generate a server?'
     }, {
       type: 'confirm',
-      name: 'wantClient',
+      name: 'client',
       message: 'Do you want to generate a client?'
     }],
     actions: function(data) {
       var actions = [];
 
-      if(data.wantServer) {
+      if (data.server) {
         actions.push({
           type: 'addMany',
-          destination: 'src/server/',
+          destination: `${process.cwd()}/dist/server/`,
           base: 'templates/servers/PET',
-          templateFiles: 'templates/servers/PET/**/*'
+          templateFiles: 'templates/servers/PET/**/*',
+          globOptions: {dot: true}
         });
       }
-      if (data.wantClient) {
+      if (data.client) {
         actions.push({
           type: 'addMany',
-          destination: 'src/client/',
+          destination: `${process.cwd()}/dist/client/`,
           base: 'templates/clients/PETA',
-          templateFiles: 'templates/clients/PETA/**/*'
+          templateFiles: 'templates/clients/PETA/**/*',
+          globOptions: {dot: true}
         });
       }
 

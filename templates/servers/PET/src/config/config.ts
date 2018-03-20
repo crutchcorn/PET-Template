@@ -180,7 +180,7 @@ var initGlobalConfig = function (): configReturn {
 
   // read package.json for MEAN.JS project information
   const pkg: object = require(resolve('./package.json'));
-  (<configReturn>config).{{camelCase projectName}} = pkg;
+  (<configReturn>config).{{camelCase name}} = pkg;
 
   // Extend the config object with the local-NODE_ENV.js custom/local environment. This will override any settings present in the local configuration.
   config = _.merge(config, (existsSync(join(process.cwd(), '/src/config/env/local-' + process.env.NODE_ENV + '.js')) && require(join(process.cwd(), 'config/env/local-' + process.env.NODE_ENV + '.js'))) || {});
@@ -219,7 +219,7 @@ interface configObject extends envDefault {
     policies: string[]
   },
   folders: {},
-  {{camelCase projectName}}: object,
+  {{camelCase name}}: object,
   utils: {
     // TODO: Remove <any>
     getGlobbedPaths: (globPatterns: any, excludes?: string | any[]) => string[],

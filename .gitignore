@@ -194,4 +194,4 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/node,linux,macos,windows,webstorm
 
 # For generated stuff
-/src
+/dist

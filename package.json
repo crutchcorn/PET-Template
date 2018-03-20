@@ -17,7 +17,10 @@
   "preferGlobal": true,
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:server:pet": "node index.js -f 'projectNameHere' y n && cd dist/server && npm install",
+    "run:server:pet": "cd src/server && npm start",
+    "build:client:peta": "node index.js -f 'projectNameHere' n y && cd dist/client && npm install",
+    "run:client:peta": "cd src/client && npm start"
   },
   "bin": {
     "generate-me": "index.js"

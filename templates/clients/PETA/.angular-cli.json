@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "project": {
-    "name": "{{dashCase projectName}}-angular"
+    "name": "{{dashCase name}}-angular"
   },
   "apps": [
     {
@@ -18,7 +18,7 @@
       "test": "test.ts",
       "tsconfig": "tsconfig.app.json",
       "testTsconfig": "tsconfig.spec.json",
-      "prefix": "{{dashCase projectName}}",
+      "prefix": "{{dashCase name}}",
       "serviceWorker": true,
       "styles": [
         "styles.scss"

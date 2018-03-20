@@ -32,10 +32,10 @@ export function start(callback ?: (app: appType, config: any) => any) {
       console.log((<any>chalk).green('Server:          ' + server));
       // TODO: Add database information to info here
       // console.log(chalk.green('Database:        ' + config.db.uri));
-      console.log((<any>chalk).green('App version:     ' + config.{{camelCase projectName}}.version));
-      // TODO: Add info to {{dashCase projectName}}-version
-      if (config.{{camelCase projectName}}['{{dashCase projectName}}-version']) {
-        console.log((<any>chalk).green('{{titleCase projectName}} version:     ' + config.{{camelCase projectName}}['{{dashCase projectName}}-version']));
+      console.log((<any>chalk).green('App version:     ' + config.{{camelCase name}}.version));
+      // TODO: Add info to {{dashCase name}}-version
+      if (config.{{camelCase name}}['{{dashCase name}}-version']) {
+        console.log((<any>chalk).green('{{titleCase name}} version:     ' + config.{{camelCase name}}['{{dashCase name}}-version']));
       }
       console.log('--');
 

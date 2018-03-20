@@ -1,13 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * DISCLAIMER
- * This code is directly taken from Plop's v2.0.0 GitHub.
- * Little has been done to modify the code other than massively cutting down the code
- */
-
-'use strict';
-
 const Liftoff = require('liftoff');
 const args = process.argv.slice(2);
 const argv = require('minimist')(args);
@@ -27,24 +19,28 @@ const Plop = new Liftoff({
 });
 
 Plop.launch({
-	cwd: argv.cwd,
-	configPath: path.resolve(__dirname, './plopfile.js'),
-	require: argv.require,
-	completion: argv.completion
+	configPath: path.resolve(__dirname, './plopfile.js')
 }, run);
 
 function run(env) {
 	const plopfilePath = env.configPath;
 
+	// set the default base path to the plopfile directory
+	const plop = nodePlop(plopfilePath, {
+		force: argv.force || argv.f
+	});
+
+	const generator = plop.getGenerator('generate');
+
 	// handle request for usage and options
-	// if (argv.help || argv.h) {
-	// 	out.displayHelpScreen();
-	// 	process.exit(0);
-	// }
+	if (argv.help || argv.h) {
+		out.getHelpMessage(generator);
+		process.exit(0);
+	}
 
 	// handle request for version number
 	if (argv.version || argv.v) {
-		if (!!env.modulePackage.version && (env.modulePackage.version !== globalPkg.version)) {
+		if (env.modulePackage.version !== globalPkg.version) {
 			console.log(chalk.yellow('CLI version'), globalPkg.version);
 			console.log(chalk.yellow('Local version'), env.modulePackage.version);
 		} else {
@@ -53,12 +49,28 @@ function run(env) {
 		return;
 	}
 
-	// set the default base path to the plopfile directory
-	const plop = nodePlop(plopfilePath, {
-		force: argv.force || argv.f
-	});
-	const bypassArr = argv._;
-	doThePlop(plop.getGenerator('generate'), bypassArr);
+	// Get named prompts that are passed to the command line
+	const promptNames = generator.prompts.map(prompt => prompt.name);
+
+	if (Object.keys(argv).length > 0) {
+		// Let's make sure we made no whoopsy-poos (AKA passing incorrect inputs)
+		let errors = false;
+		Object.keys(argv).forEach(arg => {
+			if (!(promptNames.find(name => name === arg)) && arg !== '_') {
+				console.error(chalk.red('[generate-me] ') + '"' + arg + '"' + ' is an invalid argument for "' + generator.name + '"');
+				errors = true;
+			}
+		});
+		if (errors) {
+			out.getHelpMessage(generator);
+			process.exit(1);
+		}
+		const bypassArr = promptNames.map(name => argv[name] ? argv[name] : '_');
+		doThePlop(generator, bypassArr);
+	} else {
+		doThePlop(generator);
+	}
+
 }
 
 /////
@@ -73,6 +85,7 @@ function doThePlop(generator, bypassArr) {
 			});
 			result.failures.forEach(function (line) {
 				const logs = [chalk.red('[FAILED]')];
+				console.dir(line);
 				if (line.type) { logs.push(line.type); }
 				if (line.path) { logs.push(line.path); }
 
@@ -87,4 +100,3 @@ function doThePlop(generator, bypassArr) {
 			process.exit(1);
 		});
 }
-

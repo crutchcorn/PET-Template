@@ -2,7 +2,7 @@ import {TestConfig} from 'owasp-password-strength-test';
 
 module.exports = {
   app: {
-    title: '{{constantCase projectName}}' as string,
+    title: '{{constantCase name}}' as string,
     description: 'A Passport Express TypeORM backend server template Edit' as string,
     keywords: 'typeorm, express, passport, node.js' as string,
     googleAnalyticsTrackingID: process.env.GOOGLE_ANALYTICS_TRACKING_ID as string || 'GOOGLE_ANALYTICS_TRACKING_ID' as string
@@ -28,7 +28,7 @@ module.exports = {
     secure: false as boolean
   },
   // sessionSecret should be changed for security measures and concerns
-  sessionSecret: process.env.SESSION_SECRET as string || '{{constantCase projectName}}' as string,
+  sessionSecret: process.env.SESSION_SECRET as string || '{{constantCase name}}' as string,
   // sessionKey is the cookie session name
   sessionKey: 'sessionId' as string,
   sessionCollection: 'sessions' as string,

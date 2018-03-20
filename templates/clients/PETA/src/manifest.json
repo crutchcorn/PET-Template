@@ -1,6 +1,6 @@
 {
-  "name": "{{titleCase projectName}}",
-  "short_name": "{{titleCase projectName}}",
+  "name": "{{titleCase name}}",
+  "short_name": "{{titleCase name}}",
   "theme_color": "#00c08b",
   "background_color": "#051c2c",
   "start_url": "/",

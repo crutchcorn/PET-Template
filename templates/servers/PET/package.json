@@ -1,8 +1,8 @@
 {
-  "name": "{{dashCase projectName}}-template",
+  "name": "{{dashCase name}}-template",
   "version": "0.0.1",
   "description": "A Passport Express TypeORM backend server template",
-  "{{dashCase projectName}}-version": "0.0.1",
+  "{{dashCase name}}-version": "0.0.1",
   "license": "MIT",
   "readmeFilename": "README.md",
   "author": {

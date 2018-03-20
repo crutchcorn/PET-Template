@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: '{{dashCase projectName}}-posts',
+  selector: '{{dashCase name}}-posts',
   templateUrl: './posts.component.html',
   styleUrls: ['./posts.component.scss']
 })

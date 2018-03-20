@@ -120,13 +120,13 @@
     "directive-selector": [
       true,
       "attribute",
-      "{{dashCase projectName}}",
+      "{{dashCase name}}",
       "camelCase"
     ],
     "component-selector": [
       true,
       "element",
-      "{{dashCase projectName}}",
+      "{{dashCase name}}",
       "kebab-case"
     ],
     "no-output-on-prefix": true,
