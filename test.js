@@ -1,11 +1,12 @@
 /**
  * THIS IS GOING TO BE A MASSIVE LIST
- * TODO: Make sure that key order does not affect how things work. You should be able to do `['client', 'options']` and
+ * DONE: Make sure that key order does not affect how things work. You should be able to do `['client', 'options']` and
  * have it work just as well as `['options', 'client']`
- * TODO: Make sure that requires does not apply when the path is not completed going up to it
+ * DONE: Make sure that requires does not apply when the path is not completed going up to it
  * (if net deps on opt and is required, but opt is not selected (and is not required), dont query for it)
- * TODO: If something is required and selected and has required children, it should query for all of them
- * TODO: Make sure all required items at root are found
+ * DONE: If something is required and selected and has required children, it should query for all of them
+ * DONE: Make sure all required items at root are found
+ * TODO: If a user passes an input that has a parent but does not pass the parent, prompt the user for the parent
  */
 
 const keys = ['client', 'network'];
@@ -22,6 +23,12 @@ const script = [
 		name: 'server',
 		required: (keys) => !keys.includes('client')
 	}, {
+		name: 'optional'
+	}, {
+		name: 'test',
+		depends: ['optional'],
+		required: true
+	}, {
 		name: 'options',
 		depends: [['client'], ['server']],
 		required: true
@@ -33,7 +40,11 @@ const script = [
 		depends: ['client', 'options', 'network'],
 		required: true
 	}
-].map(item => ({...item, depends: item.depends ? item.depends : [], required: typeof item.required === 'function' ? item.required(keys) : !!item.required}));
+].map(item => ({
+	...item,
+	depends: item.depends ? item.depends : [],
+	required: typeof item.required === 'function' ? item.required(keys) : !!item.required
+}));
 
 
 /* {
@@ -87,15 +98,15 @@ const cleanObject = (obj, seen = []) => Object.keys(obj).reduce((prev, key) => {
 				}
 
 				// Placing into double array for simpler
-				return { ...prev, ...{ [key]: [[...obj[key], ...refArr]] } };
+				return {...prev, ...{[key]: [[...obj[key], ...refArr]]}};
 			}
 			// Array is empty
 		} else {
-			return { ...prev, ...{ [key]: obj[key] } };
+			return {...prev, ...{[key]: obj[key]}};
 		}
 		// Array is empty
 	} else {
-		return { ...prev, ...{ [key]: [obj[key]] } };
+		return {...prev, ...{[key]: [obj[key]]}};
 	}
 }, {});
 
@@ -107,7 +118,7 @@ const cleanObject = (obj, seen = []) => Object.keys(obj).reduce((prev, key) => {
     ajax: ['client', 'options', 'network']
 }; */
 const obj = cleanObject(script.reduce((prev, x) => {
-	return { ...prev, ...{ [x.name]: x.depends ? x.depends : [] } }
+	return {...prev, ...{[x.name]: x.depends ? x.depends : []}}
 }, {}));
 
 /*
@@ -129,52 +140,67 @@ const getChildren = (obj, keys) => {
 	}*/
 	// Defaults to finding exact matches
 	// Does not suport arr to be [], must be fixed
-	// TODO: Change this from an array to an object with keys dammit Corbin
 	const findMap = (arr = keys, arrComp = 'every', compareFn = ((arrLen, subArrLen) => arrLen === subArrLen)) =>
-		Object.keys(obj).reduce((prev, key) => ({...prev,
-			[key]: obj[key].map(subArr => compareFn(arr.length, subArr.length) ?
-				// This could be rewritten as subArr[arrComp] but was not for code clarity and safety
-				Array.prototype[arrComp].bind(subArr)(item => arr.find(find => find === item)) :
-				false)
+		Object.keys(obj).reduce((prev, key) => ({
+			...prev,
+			[key]: obj[key].map(subArr =>
+				arr.length === 0 ?
+					subArr.length === 0 :
+					compareFn(arr.length, subArr.length) ?
+						// This could be rewritten as subArr[arrComp] but was not for code clarity and safety
+						Array.prototype[arrComp].bind(subArr)(item => arr.find(find => find === item)) :
+						false)
 		}), {});
-
-	// THIS IS VERY UNPERFORMANT - PLEASE SIMPLY ADD THIS FUNCTIONALITY TO findMap
-	// ['client']
-	// THIS MIGHT WORK NOW
-	const flattenFindMap = (mapRes) => Object.keys(mapRes).reduce((prev, key) => mapRes[key].find(bool => !!bool) ? [...prev, key] : prev, []);
-
-
 
 	// THIS IS VERY UNPERFORMANT - PLEASE SIMPLY ADD THIS FUNCTIONALITY TO findMap
 	// [{key: 'client': index: 3}]
 	const indexFindMap = (mapRes) => Object.keys(mapRes).reduce((prev, mapKey) => {
 		// This can be a findIndex because there should be no more than a single instance that matches exactly the same in a key. If we wanted to, we could use reduce and add an error message if this did exist
 		keyIndex = mapRes[mapKey].findIndex(bool => !!bool);
-		return keyIndex !== -1 ? [...prev, { key: mapKey, index: keyIndex }] : prev
+		return keyIndex !== -1 ? [...prev, {key: mapKey, index: keyIndex}] : prev
 	}, []);
 
 	// Start at root, find matching deps the rely on that, if required, then find deps that rely on that, and that and that
 	// for each key, find matching deps the rely on that, if required, then find deps that rely on that, and that and that
 
-	// This should work?
+	// This works. Filters out things that are already included in keys (or at least should... :thinking_face:)
 	const findPaths = (arr = keys) => {
-		const tmpMap = findMap(arr);
+		const tmpMap = findMap(arr, 'some');
 		// [{key: 'client': index: 3}]
-		objKeys = indexFindMap(tmpMap);
-		console.log(objKeys);
+		const objKeys = indexFindMap(tmpMap);
 		// Find index at which the findMap was true to pass to findPaths
-		const requiredKeys = objKeys.filter(objKey => script.find(scriptItem => scriptItem.name === objKey.key).required);
+		const requiredKeys = objKeys.filter(objKey => script.find(scriptItem => scriptItem.name === objKey.key).required && !keys.includes(objKey.key));
 		// Find required paths of children of required paths
 		return requiredKeys.reduce((prev, reqKey) => [...prev, reqKey.key, ...findPaths([...obj[reqKey.key][reqKey.index], reqKey.key], true)], []);
 	};
 
+	// This produces duplicates and should probably use a `Set`
 	const findKeysPaths = () => {
-		keys.reduce((prev, key, index, array) => {
-			const pathToFind = array.slice(0, index + 1);
-			return [...prev, ...findPaths(pathToFind)];
-		}, [])
+		console.log([...findPaths([]),
+			...keys.reduce((prev, key, index, array) => {
+				const pathToFind = array.slice(0, index + 1);
+				return [...prev, ...findPaths(pathToFind)];
+			}, [])
+		])
 	};
 
+
+
+
+
+
+
+
+
+
+
+
+	// THE FOLLOWING IS NOT VERY APPLICABLE BUT IS CODE THAT I WROTE - REMOVE THIS WHEN IT'S NO LONGER NEEDED FOR REFERNCE
+
+	// THIS IS VERY UNPERFORMANT - PLEASE SIMPLY ADD THIS FUNCTIONALITY TO findMap
+	// ['client']
+	// THIS MIGHT WORK NOW
+	const flattenFindMap = (mapRes) => Object.keys(mapRes).reduce((prev, key) => mapRes[key].find(bool => !!bool) ? [...prev, key] : prev, []);
 
 	matchMap = findMap();
 	matchChildrenMap = findMap(keys, 'every', (arrLen, subArrLen) => arrLen < subArrLen);
