@@ -117,9 +117,7 @@ const cleanObject = (obj, seen = []) => Object.keys(obj).reduce((prev, key) => {
 	network: ['options'],
     ajax: ['client', 'options', 'network']
 }; */
-const obj = cleanObject(script.reduce((prev, x) => {
-	return {...prev, ...{[x.name]: x.depends ? x.depends : []}}
-}, {}));
+const obj = cleanObject(script.reduce((prev, x) => ({...prev, ...{[x.name]: x.depends}}), {}));
 
 /*
 obj = {
@@ -131,43 +129,48 @@ obj = {
 }
 */
 const getChildren = (obj, keys) => {
-	/*{
-		"client": [false],
-		"server": [false],
-		"options": [false, false],
-		"network": [true, false],
-		"ajax": [false]
-	}*/
-	// Defaults to finding exact matches
-	// Does not suport arr to be [], must be fixed
-	const findMap = (arr = keys, arrComp = 'every', compareFn = ((arrLen, subArrLen) => arrLen === subArrLen)) =>
-		Object.keys(obj).reduce((prev, key) => ({
-			...prev,
-			[key]: obj[key].map(subArr =>
-				arr.length === 0 ?
-					subArr.length === 0 :
-					compareFn(arr.length, subArr.length) ?
-						// This could be rewritten as subArr[arrComp] but was not for code clarity and safety
-						Array.prototype[arrComp].bind(subArr)(item => arr.find(find => find === item)) :
-						false)
-		}), {});
+	const range = (num) => [...new Array(num)].map((_, i) => i);
 
-	// THIS IS VERY UNPERFORMANT - PLEASE SIMPLY ADD THIS FUNCTIONALITY TO findMap
-	// [{key: 'client': index: 3}]
-	const indexFindMap = (mapRes) => Object.keys(mapRes).reduce((prev, mapKey) => {
-		// This can be a findIndex because there should be no more than a single instance that matches exactly the same in a key. If we wanted to, we could use reduce and add an error message if this did exist
-		keyIndex = mapRes[mapKey].findIndex(bool => !!bool);
-		return keyIndex !== -1 ? [...prev, {key: mapKey, index: keyIndex}] : prev
-	}, []);
+	/*
+		[{key: 'client': index: 3}]
+	 */
+	// TODO: Ensure that subArr contains arr in order. If it's missing something in the middle, return it
+	const findMap = (arr = keys) =>
+		Object.keys(obj).reduce((prev, key) => {
+			// This can be a findIndex because there should be no more than a single instance that matches exactly the same in a key. If we wanted to, we could use reduce and add an error message if this did exist
+			const index = obj[key].findIndex(subArr => {
+				// If we're searching for root reqs, ensure the args are in the root
+				if (arr.length === 0) {
+					return subArr.length === 0;
+				} else {
+					// TODO: Ensure this still works without length check - I THINK it does but /shrug
+					// Recreate some with reduce
+					const indexedSub = subArr.reduce((prev, item) => {
+						const itemIndex = arr.findIndex(find => find === item);
+						return itemIndex !== -1 ? [...prev, itemIndex] : prev;
+					}, []);
+					// Recreate every with reduce
+					range(indexedSub.length).every(rng => indexedSub.includes(rng));
+
+					return indexedSub.length > 0;
+
+
+					// every(subArr.length === subArr.indexes)
+				}
+			});
+			return index !== -1 ? [
+				...prev,
+				{key: key, index: index}
+			] : prev;
+		}, []);
 
 	// Start at root, find matching deps the rely on that, if required, then find deps that rely on that, and that and that
 	// for each key, find matching deps the rely on that, if required, then find deps that rely on that, and that and that
 
 	// This works. Filters out things that are already included in keys (or at least should... :thinking_face:)
 	const findPaths = (arr = keys) => {
-		const tmpMap = findMap(arr, 'some');
 		// [{key: 'client': index: 3}]
-		const objKeys = indexFindMap(tmpMap);
+		const objKeys = findMap(arr);
 		// Find index at which the findMap was true to pass to findPaths
 		const requiredKeys = objKeys.filter(objKey => script.find(scriptItem => scriptItem.name === objKey.key).required && !keys.includes(objKey.key));
 		// Find required paths of children of required paths
@@ -175,61 +178,11 @@ const getChildren = (obj, keys) => {
 	};
 
 	// This produces duplicates and should probably use a `Set`
-	const findKeysPaths = () => {
-		console.log([...findPaths([]),
-			...keys.reduce((prev, key, index, array) => {
-				const pathToFind = array.slice(0, index + 1);
-				return [...prev, ...findPaths(pathToFind)];
-			}, [])
-		])
-	};
-
-
-
-
-
-
-
-
-
-
-
-
-	// THE FOLLOWING IS NOT VERY APPLICABLE BUT IS CODE THAT I WROTE - REMOVE THIS WHEN IT'S NO LONGER NEEDED FOR REFERNCE
-
-	// THIS IS VERY UNPERFORMANT - PLEASE SIMPLY ADD THIS FUNCTIONALITY TO findMap
-	// ['client']
-	// THIS MIGHT WORK NOW
-	const flattenFindMap = (mapRes) => Object.keys(mapRes).reduce((prev, key) => mapRes[key].find(bool => !!bool) ? [...prev, key] : prev, []);
-
-	matchMap = findMap();
-	matchChildrenMap = findMap(keys, 'every', (arrLen, subArrLen) => arrLen < subArrLen);
-	// To get `proximity` distance from, we need to make the `true` and `false` to return how many were accepted and how many weren't
-	// closeMatchChildren = findMap('some', (arrLen, subArrLen) => true);
-
-	// Get everything in the same branches of the graph
-
-	// 'matchKey'
-	// THIS MIGHT WORK NOW
-	match = Object.keys(matchMap).reduce((prev, key) => {
-		if (matchMap[key].find(bool => !!bool)) {
-			if (!!prev) {
-				// Is this really needed? I don't think so, because we only need to make sure that there is a match at all, but it might help match unexpected errors in plopfile - move to console.warn?
-				throw new Error('There is more than one single match, you must have duplicates')
-			} else {
-				return key;
-			}
-		} else {
-			return prev;
-		}
-	}, '');
-
-	// ['key', 'child']
-	matchChildren = flattenFindMap(matchChildrenMap);
-	return matchChildren;
+	const findKeysPaths = () => [
+		...findPaths([]), // Find all root reqs
+		...keys.reduce((prev, key, index, array) => { // Get all key reqs
+			const pathToFind = array.slice(0, index + 1);
+			return [...prev, ...findPaths(pathToFind)];
+		}, [])
+	];
 };
-
-// children = ['options', 'test']
-// const checkIfRequired = (obj, children, keys) => {
-// 	children
-// }
