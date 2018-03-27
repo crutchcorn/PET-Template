@@ -71,6 +71,7 @@ const getArr = (key, iter, array = [], seen = []) => {
 			iter.forEach(arrKey => {
 				// Ensure the object does not mix arrays and non-arrays
 				if (Array.isArray(arrKey)) {
+					console.log(arrKey);
 					throw new Error(key + ' contains an array where there should not be one. You cannot mix arrays and non-arrays or have a third level array')
 				} else {
 					// Ensure that each key being passed in the array is valid
@@ -82,7 +83,7 @@ const getArr = (key, iter, array = [], seen = []) => {
 			// This is the parent of the child
 			// Since this only is a single level deep array, we must turn it into a second level array
 			// Check if the parent of the child has an array of deps or an array of an array
-			const {seen: _seen, arr} = getArr(refArr, obj[refArr], [...array], seen);
+			const {seen: _seen, arr} = getArr(refArr, obj[refArr], [...array, ...iter], seen);
 			console.log('Arr');
 			console.log(arr);
 			if (arr.length > 0 && Array.isArray(arr[0])) {
@@ -90,10 +91,10 @@ const getArr = (key, iter, array = [], seen = []) => {
 				return {
 					// This will make sure that if the parent has an array of options, it will expand out every possibility
 					seen: _seen,
-					arr: [...arr.reduce((prev, result) => [prev, ...[...result, ...array, ...iter]], [])]
+					arr: [...arr.reduce((prev, result) => [prev, ...[...result, ...array]], [])]
 				};
 			} else {
-				return {seen: _seen, arr: [...arr, ...array, ...iter]};
+				return {seen: _seen, arr: [...arr, ...array]};
 			}
 		} else {
 			// All items in array must be array
@@ -101,11 +102,12 @@ const getArr = (key, iter, array = [], seen = []) => {
 			// TODO: It does not seem to even be doing anything with the array items
 			return {
 				seen: seen, // Yes, this will be updated as `map` runs before the return. Tested
-				arr: array.reduce((prev, items) => {
+				arr: iter.reduce((prev, items) => {
 					console.log('Items');
 					console.log(items);
 					// Explicitly check if `items[0]` is an array to ensure the check in getArr doesn't fail
 					if (!Array.isArray(items) || (Array.isArray(items) && Array.isArray(items[0]))) {
+						console.log(items);
 						throw new Error(key + ' contains an array where there should not be one. You cannot mix arrays and non-arrays or have a third level array')
 					}
 					const {seen: _seen, arr} = getArr(key, items, [...array, ...items], seen);
@@ -117,7 +119,6 @@ const getArr = (key, iter, array = [], seen = []) => {
 		}
 	} else {
 		console.log('Root')
-		// This must mean that there is `[]` and we should wrap that to be `[[]]`
 		return {seen: seen, arr: []};
 	}
 };
