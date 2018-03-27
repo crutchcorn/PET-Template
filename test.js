@@ -51,27 +51,23 @@ const script = [
 // Return that `arr` changed to allow for info on each
 // `iter` should start with `obj[key]`
 // Array is the built-up array that's gone from this point
-const getArr = (key, iter, array = [], seen = []) => {
-	console.log('Key');
-	console.log(key);
-	console.log('Iter');
-	console.log(iter);
-	console.log('Array');
-	console.log(array);
+// 'network', ['options']
+const getArr = (key, iter, seen = [], obj) => {
 	if (iter.length > 0) {
 		// `obj[key]` becomes the first level array
-		const refArr = iter[0]; // 'optional'
+		const refArr = iter[0]; // 'options'
 		// If the first item is not an array, iterate through the first array and ensure each path is valid
 		if (!Array.isArray(refArr)) {
+			// 'options'
 			seen.push(refArr);
 			const circDep = seen.find(see => see === key);
 			if (!!circDep) {
+				// TODO: This will report the wrong two object keys. `keys` is correct but `obj[keys]` is not
 				throw new Error('Cyclical dependancy detected between ' + obj[key] + ' and ' + key)
 			}
 			iter.forEach(arrKey => {
 				// Ensure the object does not mix arrays and non-arrays
 				if (Array.isArray(arrKey)) {
-					console.log(arrKey);
 					throw new Error(key + ' contains an array where there should not be one. You cannot mix arrays and non-arrays or have a third level array')
 				} else {
 					// Ensure that each key being passed in the array is valid
@@ -83,46 +79,54 @@ const getArr = (key, iter, array = [], seen = []) => {
 			// This is the parent of the child
 			// Since this only is a single level deep array, we must turn it into a second level array
 			// Check if the parent of the child has an array of deps or an array of an array
-			const {seen: _seen, arr} = getArr(refArr, obj[refArr], [...array, ...iter], seen);
-			console.log('Arr');
-			console.log(arr);
+			// 'network', [["client"], ["server"]], ['options'], ['options']
+			const {seen: _seen, arr} = getArr(key, obj[refArr], seen, obj);
 			if (arr.length > 0 && Array.isArray(arr[0])) {
 				// If this returns an array, expand that array out once more
 				return {
 					// This will make sure that if the parent has an array of options, it will expand out every possibility
 					seen: _seen,
-					arr: [...arr.reduce((prev, result) => [prev, ...[...result, ...array]], [])]
+					// arr = [[ 'test', 'client' ], [[ 'optional', 'server' ], [ 'otherOpt', 'server' ]]]
+					arr: arr.reduce((prev, result) => {
+						// [ 'test', 'client' ]
+						// [[ 'optional', 'server' ], [ 'otherOpt', 'server' ]]
+						if (Array.isArray(result[0])) {
+							// [[ 'optional', 'server' ], [ 'otherOpt', 'server' ]]
+							return [...prev, ...result.map(item => [...item, ...iter])];
+						} else {
+							// ['client']
+							return [...prev, [...result, ...iter]];
+						}
+					}, [])
 				};
 			} else {
-				return {seen: _seen, arr: [...arr, ...array]};
+				return {seen: _seen, arr: [...arr, ...iter]};
 			}
 		} else {
 			// All items in array must be array
 			// All items in those arrays must not be arrays
-			// TODO: It does not seem to even be doing anything with the array items
 			return {
 				seen: seen, // Yes, this will be updated as `map` runs before the return. Tested
+				// [["client"], ["server"]]
 				arr: iter.reduce((prev, items) => {
-					console.log('Items');
-					console.log(items);
+					// items = ['client']
 					// Explicitly check if `items[0]` is an array to ensure the check in getArr doesn't fail
 					if (!Array.isArray(items) || (Array.isArray(items) && Array.isArray(items[0]))) {
-						console.log(items);
 						throw new Error(key + ' contains an array where there should not be one. You cannot mix arrays and non-arrays or have a third level array')
-					}
-					const {seen: _seen, arr} = getArr(key, items, [...array, ...items], seen);
+					} // arr = []
+					const {seen: _seen, arr} = getArr(key, items, seen, obj);
 					seen = _seen;
+					// arr = []
+					// items = ['client']
 					// We don't have to check if this is an array of arrays as we're not actually doing the checking of keys here
-					return [...prev, ...arr];
+					return [...prev, arr];
 				}, [])
 			}
 		}
 	} else {
-		console.log('Root')
 		return {seen: seen, arr: []};
 	}
 };
-
 
 /* {
 	client: [[]],
@@ -131,7 +135,6 @@ const getArr = (key, iter, array = [], seen = []) => {
 	network: [['client', 'options'], ['server', 'options']],
     ajax: [['client', 'options', 'network']]
 }; */
-
 // TODO: Make this act like
 const cleanObject = (obj) => {
 	let seen = [];
@@ -139,7 +142,7 @@ const cleanObject = (obj) => {
 		if (!Array.isArray(obj[key])) {
 			throw new Error(key + 'is not an array. All deps must be an array')
 		}
-		const {seen: _seen, arr} = getArr(key, obj[key], [], seen);
+		const {seen: _seen, arr} = getArr(key, obj[key], seen, obj);
 		seen = _seen;
 		// Results in [] or [[]]. Should return [[]] always
 		return {...prev, [key]: Array.isArray(arr[0]) ? arr : [arr]};
