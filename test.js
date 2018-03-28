@@ -6,7 +6,8 @@
  * (if net deps on opt and is required, but opt is not selected (and is not required), dont query for it)
  * DONE: If something is required and selected and has required children, it should query for all of them
  * DONE: Make sure all required items at root are found
- * TODO: If a user passes an input that has a parent but does not pass the parent, prompt the user for the parent
+ * DONE: If a user passes an input that has a parent but does not pass the parent, prompt the user for the parent
+ * DONE: Test If the user is missing multiple inputs that share the same path (if you put in `client`, `network` but you could go `client`, `test`, `network` OR `client`, `blah`, `network`
  */
 
 const keys = ['client', 'network'];
@@ -14,27 +15,34 @@ const keys = ['client', 'network'];
 const script = [
 	{
 		name: 'name',
-		required: true
+		required: true,
+		depends: []
 	},
 	{
 		name: 'client',
-		required: (keys) => !keys.includes('server')
+		required: (keys) => !keys.includes('server'),
+		depends: []
+
 	}, {
 		name: 'server',
-		required: (keys) => !keys.includes('client')
+		required: (keys) => !keys.includes('client'),
+		depends: []
 	}, {
-		name: 'optional'
+		name: 'optional',
+		depends: []
 	}, {
 		name: 'test',
-		depends: ['optional'],
-		required: true
+		depends: ['client']
+	}, {
+		name: 'blah',
+		depends: ['client']
 	}, {
 		name: 'options',
 		depends: [['client'], ['server']],
 		required: true
 	}, {
 		name: 'network',
-		depends: ['options']
+		depends: [['test'], ['blah']]
 	}, {
 		name: 'ajax',
 		depends: ['client', 'options', 'network'],
@@ -135,7 +143,6 @@ const getArr = (key, iter, seen = [], obj) => {
 	network: [['client', 'options'], ['server', 'options']],
     ajax: [['client', 'options', 'network']]
 }; */
-// TODO: Make this act like
 const cleanObject = (obj) => {
 	let seen = [];
 	return Object.keys(obj).reduce((prev, key) => {
@@ -174,49 +181,48 @@ const range = (num) => [...new Array(num)].map((_, i) => i);
  * A function that traverses the tree for any given match of given keys.
  * @param arr - An array containing keys
  * @returns {Array} - An array containing the key and index of the path that was found to be within the arr's graph children path
- * @returns {objKeys: [{key: 'client': index: 3}], reqKeys: ['options']}
+ * { objKeys: [ { key: 'network', index: 0 } ], reqKeys: [ 'options' ] }
  */
-// TODO: Ensure that subArr contains arr in order. If it's missing something in the middle, return it
+// DONE: Will only find the first result that matches the keys input
 const findMap = (arr = keys) =>
 	Object.keys(obj).reduce((prev, key) => {
 		// This can be a findIndex because there should be no more than a single instance that matches exactly the same in a key. If we wanted to, we could use reduce and add an error message if this did exist
-		const index = obj[key].findIndex(subArr => {
+		const indexs = obj[key].reduce((prevKey, subArr, index) => {
 			// If we're searching for root reqs, ensure the args are in the root
 			if (arr.length === 0) {
-				return subArr.length === 0;
+				return subArr.length === 0 ? [...prevKey, index] : prevKey;
 			} else {
 				// Check if there are missing opts that an item in the keys depends on
 				// Check if array is empty as to not falsly check root opts
 				if (subArr.length !== 0) {
-					// TODO: This is getting matched with ajax, which is both not required and not used. Must use `every` to filter this out
 					// Recreate some with reduce
-					const prependSubArr = [key, ...subArr];
+					const prependSubArr = [...subArr, key];
 					const indexedSub = arr.reduce((prevSub, item) => {
 						const itemIndex = prependSubArr.findIndex(find => find === item);
-						console.log('itemIndex ' + itemIndex);
 						return itemIndex !== -1 ? [...prevSub, itemIndex] : prevSub;
 					}, []);
 					// Recreate every with reduce
-					console.log(indexedSub);
-					const missing = range(indexedSub.length).reduce((prevSub, rng) => {
+					const maxIndexSub = Math.max(...indexedSub, 0);
+					// Ensure that we are not checking against items that are longer than the given input to prevent false `req` flags
+					if ((maxIndexSub + 1) < prependSubArr.length) {
+						return prev;
+					}
+					const missing = range(maxIndexSub).reduce((prevSub, rng) => {
 						const valid = indexedSub.includes(rng);
-						if (valid) {
-							console.log(key + ' is missing an input');
-						}
 						return valid ? prevSub : [...prevSub, prependSubArr[rng]];
 					}, []);
 					prev.reqKeys = [...prev.reqKeys, ...missing];
-					return indexedSub.length > 0;
+					return indexedSub.length > 0 ? [...prevKey, index] : prevKey;
 				} else {
-					return false;
+					return prevKey;
 				}
 			}
-		});
+		}, []);
 		return {
 			...prev,
-			objKeys: index !== -1 ? [
+			objKeys: indexs.length > 0 ? [
 				...prev.objKeys,
-				{key: key, index: index}
+				...indexs.map(index => ({key: key, index: index}))
 			] : prev.objKeys
 		};
 	}, {objKeys: [], reqKeys: []});
@@ -236,6 +242,8 @@ const findPaths = (arr = keys) => {
 	// Find required paths of children of required paths
 	// return requiredKeys.reduce((prev, reqKey) => [...prev, reqKey.key, ...findPaths(obj[reqKey.key][reqKey.index], true)], reqKeys);
 };
+
+console.log(findMap(keys));
 
 // This produces duplicates and should probably use a `Set`
 const findKeysPaths = () => [
