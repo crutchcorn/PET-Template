@@ -15,34 +15,27 @@ const keys = ['client', 'network'];
 const script = [
 	{
 		name: 'name',
-		required: true,
-		depends: []
+		required: true
 	},
 	{
 		name: 'client',
-		required: (keys) => !keys.includes('server'),
-		depends: []
-
+		required: (keys) => !keys.includes('server')
 	}, {
 		name: 'server',
-		required: (keys) => !keys.includes('client'),
-		depends: []
+		required: (keys) => !keys.includes('client')
 	}, {
-		name: 'optional',
-		depends: []
+		name: 'optional'
 	}, {
 		name: 'test',
-		depends: ['client']
-	}, {
-		name: 'blah',
-		depends: ['client']
+		depends: ['client'],
+		required: true
 	}, {
 		name: 'options',
 		depends: [['client'], ['server']],
 		required: true
 	}, {
 		name: 'network',
-		depends: [['test'], ['blah']]
+		depends: ['options']
 	}, {
 		name: 'ajax',
 		depends: ['client', 'options', 'network'],
@@ -184,30 +177,67 @@ const range = (num) => [...new Array(num)].map((_, i) => i);
  * { objKeys: [ { key: 'network', index: 0 } ], reqKeys: [ 'options' ] }
  */
 // DONE: Will only find the first result that matches the keys input
+// TODO:  If an exact match is found, ignore missing keys from other possible paths
+// TODO: Find required children of those paths (or exact paths)
+// TODO: This code BARELY functions and doesn't even realistically return anything near what I'd want it to. Scope creep has destroyed this function and it's logic needs to be rewritten
+// TODO: This should match all required paths starting from root. This means that if the start is all required, keep going until you hit something that isn't required
+// TODO: This should probably have a `partialMatchReq`, `partialChildrenReq`, `fullChildrenReq` in a reduce function and then use an `async await` to break that down into a simple array of keys to be required
 const findMap = (arr = keys) =>
 	Object.keys(obj).reduce((prev, key) => {
-		// This can be a findIndex because there should be no more than a single instance that matches exactly the same in a key. If we wanted to, we could use reduce and add an error message if this did exist
+		// Find indexes of obj[key] that match `keys` input
 		const indexs = obj[key].reduce((prevKey, subArr, index) => {
-			// If we're searching for root reqs, ensure the args are in the root
-			if (arr.length === 0) {
-				return subArr.length === 0 ? [...prevKey, index] : prevKey;
-			} else {
+				// If `key` is a root item, check if it's required and add it if it is and nothing was passed to it
+				if (subArr.length === 0 || (subArr.length === 1 && subArr[0].length === 0) && script[key].required && !keys.find(key)) {
+					prev.reqKeys = [...prev.reqKeys, key];
+				}
 				// Check if there are missing opts that an item in the keys depends on
 				// Check if array is empty as to not falsly check root opts
 				if (subArr.length !== 0) {
 					// Recreate some with reduce
 					const prependSubArr = [...subArr, key];
+					// Finds possible paths that could be going down
 					const indexedSub = arr.reduce((prevSub, item) => {
 						const itemIndex = prependSubArr.findIndex(find => find === item);
 						return itemIndex !== -1 ? [...prevSub, itemIndex] : prevSub;
 					}, []);
-					// Recreate every with reduce
-					const maxIndexSub = Math.max(...indexedSub, 0);
-					// Ensure that we are not checking against items that are longer than the given input to prevent false `req` flags
-					if ((maxIndexSub + 1) < prependSubArr.length) {
-						return prev;
+					if (indexedSub.length === subArr.length) {
+						// This either means that it was a total match with children
+						// OR that there was more matching than subArr.length with things missing in it
+					} else if (indexedSub.length > subArr.length) {
+						// This either means that it was a total match with children
+						// OR that there was more matching than subArr.length with things missing in it
 					}
-					const missing = range(maxIndexSub).reduce((prevSub, rng) => {
+					// Recreate every with reduce
+					const maxIndexSub = Math.max(...indexedSub, -1);
+					// Ensure that we are not checking against items that are longer than the given input to prevent false `req` flags
+
+					const indexSameLenArr = maxIndexSub === arr.length;
+					// This should be a perfect match with no children or missing items
+					const perfectMatch = indexSameLenArr && prependSubArr.length === indexedSub.length;
+					// This should be a perfect match with children but no missing items
+					const perfMatchWKids = indexSameLenArr  && arr.length < prependSubArr.length;
+
+					// If there are missing items with child items
+					if (perfMatchWKids || !(maxIndexSub !== arr.length && prependSubArr === maxIndexSub)) {
+						const children = prependSubArr.slice(maxIndexSub, prependSubArr.length);
+						const reqChild = [];
+						for (const child of children) {
+							if (script[child].required) {
+								reqChild.push(child);
+							} else {
+								break; // Breaks out as soon as something is found that is not required as it should stop as close to `key` as possible
+							}
+						}
+						// TODO: Do something with reqChild
+						// TODO: It might be a good idea to seperate the children reqs for each but they use the same logic soooo /shrug
+					}
+
+					// TODO: Only check missing against maxIndexSub so that you don't get any child path that's not intended
+					// TODO: The children of these items will be checked to see if there's any required
+					// Checks against possible paths and finds missing items from those paths
+					// TODO: Skip missing checks for both of these
+					if (perfMatchWKids || perfectMatch) {}
+					const missing = range(prependSubArr.length).reduce((prevSub, rng) => {
 						const valid = indexedSub.includes(rng);
 						return valid ? prevSub : [...prevSub, prependSubArr[rng]];
 					}, []);
@@ -216,7 +246,6 @@ const findMap = (arr = keys) =>
 				} else {
 					return prevKey;
 				}
-			}
 		}, []);
 		return {
 			...prev,
@@ -243,11 +272,11 @@ const findPaths = (arr = keys) => {
 	// return requiredKeys.reduce((prev, reqKey) => [...prev, reqKey.key, ...findPaths(obj[reqKey.key][reqKey.index], true)], reqKeys);
 };
 
+console.log(obj);
 console.log(findMap(keys));
 
 // This produces duplicates and should probably use a `Set`
 const findKeysPaths = () => [
-	...findPaths([]), // Find all root reqs
 	...keys.reduce((prev, key, index, array) => { // Get all key reqs
 		const pathToFind = array.slice(0, index + 1);
 		return [...prev, ...findPaths(pathToFind)];
