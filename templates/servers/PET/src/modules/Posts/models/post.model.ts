@@ -18,7 +18,7 @@ export class Post {
   text: string;
 
   @ManyToMany(type => Category, {
-    cascadeInsert: true
+    cascade: ["insert"]
   })
   @JoinTable()
   categories: Category[];
@@ -29,6 +29,6 @@ export class Post {
   @CreateDateColumn()
   created: Date;
 
-  @ManyToOne(type => User, user => user.posts, {cascadeAll: true, eager: true})
+  @ManyToOne(type => User, user => user.posts, {cascade: true, eager: true})
   user: User;
 }

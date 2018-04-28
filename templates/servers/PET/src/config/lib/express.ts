@@ -45,7 +45,7 @@ export function initLocalVariables(app: appType): void {
     res.locals.url = req.protocol + '://' + req.headers.host + req.originalUrl;
     next();
   });
-};
+}
 
 
 /**
@@ -55,7 +55,7 @@ export function initMiddleware(app: appType): void {
   // Should be placed before express.static
   app.use(compress({
     filter: function (req, res) {
-      return (/json|text|javascript|css|font|svg/).test(res.getHeader('Content-Type'));
+      return (/json|text|javascript|css|font|svg/).test(<string>res.getHeader('Content-Type'));
     },
     level: 9
   }));
@@ -88,7 +88,7 @@ export function initMiddleware(app: appType): void {
   // TODO: See if flash middleware is needed
   app.use(cookieParser());
   app.use(flash());
-};
+}
 
 /**
  * Configure Express session
@@ -110,7 +110,7 @@ export function initSession(app: appType, store: session.MemoryStore): void {
 
   // Add Lusca CSRF Middleware
   app.use(lusca(config.csrf));
-};
+}
 
 /**
  * Invoke modules server configuration
@@ -119,7 +119,7 @@ export function initModulesConfiguration(app: appType): void {
   config.files.configs.forEach(function (configPath) {
     require(resolve(configPath)).default(app);
   });
-};
+}
 
 /**
  * Configure Helmet headers configuration for security
@@ -138,7 +138,7 @@ export function initHelmetHeaders(app: appType): void {
     force: true
   }));
   app.disable('x-powered-by');
-};
+}
 
 /**
  * Configure the modules ACL policies
@@ -148,7 +148,7 @@ export function initModulesServerPolicies(): void {
   config.files.policies.forEach(function (policyPath) {
     require(resolve(policyPath)).invokeRolesPolicies();
   });
-};
+}
 
 /**
  * Configure the modules server routes
@@ -158,7 +158,7 @@ export function initModulesServerRoutes(app: appType): void {
   config.files.routes.forEach(function (routePath) {
     require(resolve(routePath)).default(app);
   });
-};
+}
 
 /**
  * Configure error handling
@@ -176,7 +176,7 @@ export function initErrorRoutes(app: appType): void {
     // Redirect to error page
     res.status(500).json({'message': err});
   });
-};
+}
 
 
 /**
@@ -184,11 +184,11 @@ export function initErrorRoutes(app: appType): void {
  */
 export function configureSocketIO(app: appType, store: session.MemoryStore) {
   // Load the Socket.io configuration
-  var server = require('./socket.io')(app, store);
+  // var server = require('./socket.io')(app, store);
 
   // Return server object
-  return server;
-};
+  // return server;
+}
 
 /**
  * Initialize the Express application
@@ -223,7 +223,7 @@ export function init(): appType {
   this.initErrorRoutes(app);
 
   // Configure Socket.io
-  app = this.configureSocketIO(app, store);
+  // app = this.configureSocketIO(app, store);
 
   return app;
 }

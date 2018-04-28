@@ -9,7 +9,7 @@ export default function (app) {
   // Setting up the users password api
   app.route('/api/auth/forgot')
     .post(forgot);
-  // TODO: Re-enable this feature
+
   app.route('/api/auth/reset/:token')
     .get(validateResetToken)
     .post(reset);

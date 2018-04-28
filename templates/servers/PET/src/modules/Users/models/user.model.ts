@@ -98,7 +98,7 @@ export class User {
 
   // TODO: Add default of 'User'
   // TODO: Add required validation
-  @ManyToMany(type => Role, {cascadeUpdate: true, cascadeInsert: true})
+  @ManyToMany(type => Role, {cascade: ["update", "insert"]})
   @JoinTable()
   roles: Role[];
 
@@ -123,9 +123,6 @@ export class User {
    * https://github.com/typeorm/typeorm/issues/1459
    */
   generateSalt(newPass: string, oldPass?: string) {
-    console.log(newPass);
-    console.log(oldPass);
-    console.log("There should have been a salt generated");
     if (newPass && (!oldPass || oldPass !== newPass)) {
       console.log("This generates a new salt");
       this.salt = genSaltSync(8);
@@ -136,40 +133,25 @@ export class User {
 
   @BeforeInsert()
   preSave() {
-    getManager().findOneById(User, this.id)
-      .then(newUser => {
-        this.generateSalt(newUser.password);
-      })
-      .catch(err => {
-        throw new Error(`Something went wrong while updating user\n${err}`);
-      });
+    if (this.password) {
+      this.generateSalt(this.password);
+    }
   }
 
+  // In order for this to change the user password, the user being called on must have had access to the password
+  // by doing a select like the one found below
   @BeforeUpdate()
   async preUpdate() {
-      const newUser = await getRepository(User)
-        .createQueryBuilder("user")
-        .addSelect("user.password")
-        .where("user.id = :id", { id: this.id })
-        .getOne();
-
-    getManager()
-      .createQueryBuilder(User, 'user')
+    const oldUser = await getRepository(User)
+      .createQueryBuilder("user")
       .addSelect("user.password")
+      .addSelect("user.salt")
       .where("user.id = :id", { id: this.id })
-      .getOne()
-      .then(oldUser => {
-        console.log("newUser");
-        console.log(newUser);
-        console.log('oldUser');
-        console.log(oldUser);
-        this.firstName = "Testing how `this` affects the save";
-        // this.generateSalt(newUser.password, oldUser.password);
-      })
-      .catch(err => {
-        throw new Error(`Something went wrong while updating user\n${err}`);
-      });
+      .getOne();
+
+   this.generateSalt(this.password, oldUser.password);
   }
+
 
   /*
   // TODO: Add pre-validate hooks

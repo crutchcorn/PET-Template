@@ -47,8 +47,9 @@ function pick(o, ...props) {
  */
 export async function update(req: Request, res: Response) {
   // Init Variables
-  let user = req.user as User;
-
+  let user = await userRepository.findOne(req.user.id);
+  // Add error handling if user not logged in
+  
   if (user) {
     // Update whitelisted fields only
     user = Object.assign(user, pick(req.body, whitelistedFields));

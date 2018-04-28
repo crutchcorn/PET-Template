@@ -47,7 +47,8 @@ export async function signup(req: Request, res: Response) {
       }
     });
   } catch (err) {
-    res.status(500).send({message: "There was a problem signing up that user"});
+    // TODO: Catch errors with non-nullable
+    res.status(500).send({message: "There was a problem signing up that user", err: err});
   }
 
 }

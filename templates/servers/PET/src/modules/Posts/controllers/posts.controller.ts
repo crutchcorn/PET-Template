@@ -30,7 +30,7 @@ export function postGetByIdAction(req: PostRequest, res: Response) {
 export async function postUpdateAction(req: PostRequest, res: Response) {
   // TODO: Model is not returning any data
   try {
-    const updatedPost = await postRepository.updateById(req.post.id, {
+    const updatedPost = await postRepository.update(req.post.id, {
       ...req.body,
       user: undefined
     });
@@ -56,7 +56,7 @@ export async function postGetAllAction(req: Request, res: Response) {
 }
 
 export async function postByID(req: PostRequest, res: Response, next: Function, id: string) {
-  postRepository.findOneById(id)
+  postRepository.findOne(id)
     .then(post => {
       if (!post) {
         res.status(404).send({message: 'Couldn\'t find a post with that ID'});

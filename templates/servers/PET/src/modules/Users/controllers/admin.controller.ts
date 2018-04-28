@@ -10,7 +10,7 @@ const userRepository = getManager().getRepository(User);
  */
 export async function read(req, res) {
   try {
-    const user = await userRepository.findOneById(req.params.userId);
+    const user = await userRepository.findOne(req.params.userId);
     res.json(user);
   } catch (err) {
     res.status(500).send({message: 'Could not read the current user'});
@@ -21,7 +21,7 @@ export async function read(req, res) {
  * Update a User
  */
 export async function update(req: Request, res: Response) {
-  userRepository.findOneById(req.params.userId)
+  userRepository.findOne(req.params.userId)
     .then(user => {
       if (user) {
         // For security purposes only merge these parameters
@@ -44,7 +44,7 @@ export async function update(req: Request, res: Response) {
  * Delete a user
  */
 export function deleteUser(req: Request, res: Response) {
-  userRepository.findOneById(req.params.userId)
+  userRepository.findOne(req.params.userId)
     .then(async (user) => {
       if (user) {
         try {

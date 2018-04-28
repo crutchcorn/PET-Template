@@ -85,7 +85,7 @@ export function forgot(req: Request, res: Response) {
   generateToken
     .then(findUser)
     .then(generateHTML)
-    // .then(sendEmail)
+    // .then(sendEmail) // TODO: Enable this feature
     .catch((err: {message: string, code: number}) => res.status(err && err.code ? err.code : 500).send({
       message: err.message
     }));
@@ -112,90 +112,93 @@ export function validateResetToken(req, res) {
 export function reset(req: Request, res: Response) {
   // Init Variables
   const passwordDetails = req.body;
+  if (passwordDetails.verifyPassword && passwordDetails.newPassword) {
 
-  const findUser = new Promise((resolve, reject) => {
-    userRepository
-      .createQueryBuilder('row')
-      .where('row.resetPasswordToken = :token', {token: req.params.token})
-      .addSelect('row.password')
-      .addSelect('row.salt')
-      .getOne()
-      .then(user => {
-        console.log(JSON.stringify(user));
-        user.resetPasswordExpires > new Date(Date.now()) ? resolve(user) :
-          reject({code: 401, message: 'Password reset token has expired.'})
-      })
-      .catch(err => reject({code: 401, message: 'Password reset token is invalid.'}));
-  });
-
-  const changeUserPass = (user: User) => new Promise((resolve, reject) => {
-    if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
-      user.password = passwordDetails.newPassword;
-      user.resetPasswordToken = null;
-      user.resetPasswordExpires = null;
-      console.log(JSON.stringify(user));
-
-      userRepository.save(user)
-        .then(userSaved => {
-          req.login(user, function (err) {
-            if (err) {
-              reject({code: 400, message: err});
-            } else {
-              // Remove sensitive data before return authenticated user
-              user.password = undefined;
-
-              res.json(user);
-
-              resolve(user);
-            }
-          });
+    const findUser = new Promise((resolve, reject) => {
+      userRepository
+        .createQueryBuilder('row')
+        .where('row.resetPasswordToken = :token', {token: req.params.token})
+        .addSelect('row.password')
+        .addSelect('row.salt')
+        .getOne()
+        .then(user => {
+          user.resetPasswordExpires > new Date(Date.now()) ? resolve(user) :
+            reject({code: 401, message: 'Password reset token has expired.'})
         })
-        .catch(err => reject({code: 500, message: err}));
-    } else {
-      reject({code: 422, message: 'Passwords do not match'});
-    }
-  });
-
-  const generateHTML = (user: User) => new Promise((resolve, reject) => {
-    renderFile(pathResolve('./src/modules/users/templates/reset-password-confirm-email.html'), {
-      name: user.displayName,
-      appName: config.app.title,
-    }, (err, str) => err ? reject({code: 500, message: err}) : resolve({html: str, user: User}));
-  });
-
-  const sendEmail = (userHTMLObj: {html: string, user: User}) => new Promise((resolve, reject) => {
-    const mailOptions = {
-      to: userHTMLObj.user.email,
-      from: config.mailer.from,
-      subject: 'Your password has been changed',
-      html: userHTMLObj.html
-    };
-
-    smtpTransport.sendMail(mailOptions, function (err) {
-      err ? reject(err) : resolve("Job well done")
+        .catch(err => reject({code: 401, message: 'Password reset token is invalid.'}));
     });
-  });
 
-  findUser
-    .then(changeUserPass)
-    .then(generateHTML)
-    // .then(sendEmail)
-    .catch((err: {message: string, code: number}) => res.status(err && err.code ? err.code : 500).send({
-      message: err.message
-    }));
-};
+    const changeUserPass = (user: User) => new Promise((resolve, reject) => {
+      if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
+        user.password = passwordDetails.newPassword;
+        user.resetPasswordToken = null;
+        user.resetPasswordExpires = null;
+        console.log(JSON.stringify(user));
+
+        userRepository.save(user)
+          .then(userSaved => {
+            req.login(user, function (err) {
+              if (err) {
+                reject({code: 400, message: err});
+              } else {
+                // Remove sensitive data before return authenticated user
+                user.password = undefined;
+
+                res.json(user);
+
+                resolve(user);
+              }
+            });
+          })
+          .catch(err => reject({code: 500, message: err}));
+      } else {
+        reject({code: 422, message: 'Passwords do not match'});
+      }
+    });
+
+    const generateHTML = (user: User) => new Promise((resolve, reject) => {
+      renderFile(pathResolve('./src/modules/users/templates/reset-password-confirm-email.html'), {
+        name: user.displayName,
+        appName: config.app.title,
+      }, (err, str) => err ? reject({code: 500, message: err}) : resolve({html: str, user: User}));
+    });
+
+    const sendEmail = (userHTMLObj: { html: string, user: User }) => new Promise((resolve, reject) => {
+      const mailOptions = {
+        to: userHTMLObj.user.email,
+        from: config.mailer.from,
+        subject: 'Your password has been changed',
+        html: userHTMLObj.html
+      };
+
+      smtpTransport.sendMail(mailOptions, function (err) {
+        err ? reject(err) : resolve("Job well done")
+      });
+    });
+
+    findUser
+      .then(changeUserPass)
+      .then(generateHTML)
+      // .then(sendEmail) // TODO: Enable this feature
+      .catch((err: { message: string, code: number }) => res.status(err && err.code ? err.code : 500).send({
+        message: err.message
+      }));
+  } else {
+    res.status(400).send({message: 'Your password reset request contained invalid data in the body'});
+  }
+}
 
 /**
  * Change Password
  */
-// TODO: Re-enable this feature
+// TODO: Re-enable this feature in routes - this should work according to code
 export function changePassword(req, res) {
   // Init Variables
   const passwordDetails = req.body;
 
   if (req.user) {
     if (passwordDetails.newPassword) {
-      userRepository.findOneById(req.user.id)
+      userRepository.findOne(req.user.id)
         .then(user => {
           if (user.authenticate(passwordDetails.currentPassword)) {
             if (passwordDetails.newPassword === passwordDetails.verifyPassword) {
