@@ -15,6 +15,7 @@ import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/throw';
+import {isOurAPICall} from '../../shared/functions/api';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -33,9 +34,8 @@ export class AuthInterceptor implements HttpInterceptor {
       })
       .catch(response => {
         if (response instanceof HttpErrorResponse) {
-          if (response.status === 403) {
-            this.authService.nullifyAuth();
-            this.router.navigate(['/login']);
+          if (response.status === 403 && isOurAPICall(request.url)) {
+            this.authService.invalidateUser();
           }
         }
 

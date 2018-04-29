@@ -37,7 +37,6 @@ export class AuthGuard implements CanActivate, CanActivateChild {
             return true;
           } else {
             // GOT A 403 ERROR WHICH WILL CALL AUTH INTERCEPTOR. ONLY CALLING FALSE JUST TO BE SAFE
-            this.authService.redirectUrl = url;
             return false;
           }
         }));

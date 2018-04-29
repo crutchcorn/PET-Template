@@ -3,6 +3,10 @@ import {Subject} from 'rxjs/Subject';
 
 @Injectable()
 export class TimeoutService {
+  maxAge = 24 * (60 * 60 * 1000);
+  // session can be made to "remember me" and change the maxAge to two weeks
+  rememberMaxAge = 2 * 7 * 24 * (60 * 60 * 1000);
+
   active = false;
 
   time = new Subject();

@@ -33,6 +33,7 @@ export class StayLoggedInDialogComponent {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  tenMinutes = 60 * 1000 * 10;
   dialogRef: MatDialogRef<StayLoggedInDialogComponent>;
 
   constructor(private timeoutService: TimeoutService,
@@ -43,7 +44,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.timeoutService.time
-      .pipe(switchMap(() => Observable.timer(1000 * 60 * 50))) //// 10 mins less than an hour
+      .pipe(switchMap(() => Observable.timer(this.authService.remember ?
+        this.timeoutService.rememberMaxAge - this.tenMinutes:
+        this.timeoutService.maxAge - this.tenMinutes)))
       .do(() => {
         if (this.timeoutService.active) {
           this.dialogRef = this.dialog.open(StayLoggedInDialogComponent);
@@ -59,11 +62,11 @@ export class AppComponent implements OnInit {
       .subscribe();
 
     this.timeoutService.time
-      .pipe(switchMap(() => Observable.timer(1000 * 60 * 60))) // An hour
+      .pipe(switchMap(() => Observable.timer(this.authService.remember ? this.timeoutService.rememberMaxAge :
+        this.timeoutService.maxAge)))
       .do(() => {
         if (this.timeoutService.active) {
-          this.authService.logout()
-            .pipe(take(1)).subscribe();
+          this.authService.invalidateUser();
           if (this.dialogRef) {
             this.dialogRef.close();
           }
