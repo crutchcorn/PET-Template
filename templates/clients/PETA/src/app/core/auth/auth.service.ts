@@ -33,17 +33,25 @@ export class AuthService {
       .post<User>('/api/auth/signup', newUser);
   }
 
-  login(username: string, password: string, remember = false): Observable<User> {
+  /**
+   * Login function
+   * @param {string} usernameOrEmail - Username or email address of user you'd like to login to
+   * @param {string} password - Password for the user you'd like to login to
+   * @param {boolean} remember - Default false - Toggle for the server's "remember me" function. If true, it will keep
+   * the session active for 2 weeks of inactivity
+   * @returns {Observable<User>}
+   */
+  login(usernameOrEmail: string, password: string, remember = false): Observable<User> {
     return this.http
-      .post<User>('/api/auth/signin', {usernameOrEmail: username, password: password, remember: remember})
+      .post<User>('/api/auth/signin', {usernameOrEmail: usernameOrEmail, password: password, remember: remember})
       .pipe(map((user: User) => {
-          if (remember) {
-            this.remember = true;
-          }
-          this.timeoutService.setTime();
-          this.authAccept(user);
-          return user;
-        }));
+        if (remember) {
+          this.remember = true;
+        }
+        this.timeoutService.setTime();
+        this.authAccept(user);
+        return user;
+      }));
   }
 
   get token(): string {
@@ -51,7 +59,7 @@ export class AuthService {
   }
 
   set token(token: string) {
-    document.cookie = cookie.serialize('sessionId', token || '', { path: '/' });
+    document.cookie = cookie.serialize('sessionId', token || '', {path: '/'});
   }
 
   logout(): Observable<{ message: string }> {
@@ -64,6 +72,10 @@ export class AuthService {
       }));
   }
 
+  /**
+   * Handle the generic login logic when a user's login is accepted
+   * @param {User} user - User that's auth credentials have been accepted
+   */
   authAccept(user: User): void {
     this.timeoutService.enable();
     this.store.dispatch(new userActions.LoadUser(user));
@@ -73,14 +85,19 @@ export class AuthService {
     }
   }
 
-  // TODO: Add a SnackBar indicating that the user has been forcably logged off of a given page
+  /**
+   * Handle the generic logic for when the user should be forcibly logged out of the system
+   */
   invalidateUser(): void {
     // Added redirectURL here so that we can catch all errors, not just ones that are tagged
-    this.redirectUrl = this.location.path;
+    this.redirectUrl = this.location.path();
     this.nullifyAuth();
-    this.router.navigate(['/']);
+    this.router.navigate(['/login', {queryParams: {forced: true}}]);
   }
 
+  /**
+   * Handle the generic logic for all functions that involve handling "booting" the user, forcibly or otherwise
+   */
   nullifyAuth(): void {
     this.token = null;
     this.remember = false;

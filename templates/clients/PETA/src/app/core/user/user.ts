@@ -34,6 +34,7 @@
   }
 
   export class User extends UserWithoutRole {
+    // TODO: This might need to be done on the server :thinking_face:
     roles: Role[];
     get rolestr(): string[] {
       return this.roles.map(role => role.name);
