@@ -98,6 +98,7 @@ export function initSession(app: appType, store: session.MemoryStore): void {
   app.use(session({
     saveUninitialized: true,
     resave: true,
+    rolling: true,
     secret: config.sessionSecret,
     cookie: {
       maxAge: config.sessionCookie.maxAge,

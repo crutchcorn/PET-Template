@@ -36,11 +36,4 @@ export default function (app) {
   // Add passport's middleware
   app.use(initialize());
   app.use(session());
-  app.use((req, res, next) => {
-    if (!req.user) {
-      return next();
-    };
-    req.session.cookie.maxAge = config.sessionCookie.maxAge;
-    next()
-  })
 }

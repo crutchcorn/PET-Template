@@ -19,6 +19,8 @@ module.exports = {
   sessionCookie: {
     // session expiration is set by default to 24 hours
     maxAge: 24 * (60 * 60 * 1000) as number,
+    // session can be made to "remember me" and change the maxAge to two weeks
+    rememberMaxAge: 2 * 7 * 24 * (60 * 60 * 1000) as number,
     // httpOnly flag makes sure the cookie is only accessed
     // through the HTTP protocol and not JS/browser
     httpOnly: true as boolean,
@@ -78,47 +80,48 @@ module.exports = {
 export interface envDefault {
   app: {
     title: string,
-      description: string,
-      keywords: string,
-      googleAnalyticsTrackingID: string
+    description: string,
+    keywords: string,
+    googleAnalyticsTrackingID: string
   },
   db: {
     promise: Function
   },
   port: string | number,
-    host: string,
-    domain: string,
-    sessionCookie: {
+  host: string,
+  domain: string,
+  sessionCookie: {
     maxAge: number,
-      httpOnly: boolean,
-      secure: boolean
+    rememberMaxAge: number,
+    httpOnly: boolean,
+    secure: boolean
   },
   sessionSecret: string,
-    sessionKey: string,
-    sessionCollection: string,
-    csrf: {
+  sessionKey: string,
+  sessionCollection: string,
+  csrf: {
     csrf: boolean,
-      csp: boolean,
-      xframe: string,
-      p3p: string,
-      xssProtection: boolean
+    csp: boolean,
+    xframe: string,
+    p3p: string,
+    xssProtection: boolean
   },
   logo: string,
-    favicon: string,
-    illegalUsernames: string[],
-    aws: {
+  favicon: string,
+  illegalUsernames: string[],
+  aws: {
     s3: {
       accessKeyId: string,
-        secretAccessKey: string,
-        bucket: string
+      secretAccessKey: string,
+      bucket: string
     }
   },
   uploads: {
     storage: string,
-      profile: {
+    profile: {
       image: {
         dest: string,
-          limits: {
+        limits: {
           fileSize: number
         }
       }

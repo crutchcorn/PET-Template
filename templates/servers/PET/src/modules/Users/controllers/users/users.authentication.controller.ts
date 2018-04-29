@@ -4,6 +4,8 @@ import * as passport from 'passport';
 import {getManager} from 'typeorm';
 import {User} from '../../models/user.model';
 import {Role} from '../../models/role.model';
+import {configReturn} from '../../../../config/config';
+const config: configReturn = require(path.resolve('./src/config/config'));
 import * as validator from 'validator';
 // errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
 
@@ -69,6 +71,9 @@ export function signin(req: Request, res: Response, next: NextFunction) {
         if (err) {
           res.status(400).send(err);
         } else {
+          if (req.body.remember) {
+            req.session.cookie.maxAge = config.sessionCookie.rememberMaxAge;
+          }
           res.json(user);
         }
       });
