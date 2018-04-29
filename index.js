@@ -2,7 +2,10 @@
 
 const Liftoff = require('liftoff');
 const args = process.argv.slice(2);
-const argv = require('minimist')(args);
+// This is done to fix passing `-f` in and breaking plop-node
+const noForceargs = args.filter(arg => arg !== '-f' && arg !== '--force');
+const force = noForceargs.length !== args.length;
+const argv = require('minimist')(noForceargs);
 const v8flags = require('v8flags');
 const interpret = require('interpret');
 const chalk = require('chalk');
@@ -27,7 +30,7 @@ function run(env) {
 
 	// set the default base path to the plopfile directory
 	const plop = nodePlop(plopfilePath, {
-		force: argv.force || argv.f
+		force: force
 	});
 
 	const generator = plop.getGenerator('generate');

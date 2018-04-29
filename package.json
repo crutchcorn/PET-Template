@@ -4,23 +4,29 @@
   "description": "A multi-framework server and client generator",
   "main": "index.js",
   "dependencies": {
-    "chalk": "^1.1.3",
+    "chalk": "^2.4.1",
     "interpret": "^1.0.0",
     "liftoff": "^2.2.0",
     "minimist": "^1.2.0",
     "node-plop": "=0.13.0",
-    "v8flags": "^2.0.10"
+    "v8flags": "^3.0.2"
   },
   "engines": {
     "node": ">=8.9.4"
   },
   "preferGlobal": true,
-  "devDependencies": {},
+  "devDependencies": {
+    "npm-run-all": "^4.1.2"
+  },
   "scripts": {
-    "build:server:pet": "node index.js -f 'projectNameHere' y n && cd dist/server && npm install",
-    "run:server:pet": "cd src/server && npm start",
-    "build:client:peta": "node index.js -f 'projectNameHere' n y && cd dist/client && npm install",
-    "run:client:peta": "cd src/client && npm start"
+    "server": "npm-run-all server:pet",
+    "server:pet": "npm-run-all --sequential server:pet:build server:pet:run",
+    "server:pet:build": "node index.js -f --name 'projectNameHereRegexEasy' --server --client n && cd dist/server && npm install",
+    "server:pet:run": "cd dist/server && npm start",
+    "client": "npm-run-all client:peta",
+    "client:peta": "npm-run-all --sequential client:peta:build client:peta:run",
+    "client:peta:build": "node index.js -f  --name 'projectNameHereRegexEasy' --server n --client && cd dist/client && npm install",
+    "client:peta:run": "cd dist/client && npm start"
   },
   "bin": {
     "generate-me": "index.js"
