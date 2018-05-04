@@ -1,3 +1,3 @@
 import 'reflect-metadata';
-import *  as app from './config/lib/app';
-var server = app.start();
+import {start} from './config/lib/app';
+start();

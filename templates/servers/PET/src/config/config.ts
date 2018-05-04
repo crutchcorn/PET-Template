@@ -1,41 +1,53 @@
 /**
  * Module dependencies.
  */
-import * as _ from 'lodash';
+// TODO: Remove lodash dep
+/**
+ * This will be the hardest
+ * Combine like arrays
+ * Ignore undefined
+ * Combine objects
+ * Otherwise do {...}
+ */
+import {merge} from 'lodash';
 import chalk from 'chalk';
 import {sync} from 'glob';
 import {existsSync} from 'fs';
 import {resolve, join} from 'path';
-import {envDefault} from './env/default';
-import {envTest} from './env/test';
-import {envProduction} from './env/production';
-import {envDevelopment} from './env/development';
+import {defaultAssetsType, envAssetsType, mergedAssetsType} from './assets';
+import {defaultEnvType, envEnvType, mergedEnvType, secureType} from './env';
 
+/**
+ * Checks if item is a string
+ */
+const isString = (value: any): boolean => {
+  return Object.prototype.toString.call(value) === '[object String]';
+};
 
 /**
  * Get files by glob patterns
  */
-const getGlobbedPaths = function (globPatterns: string | string[], excludes?: string | any[]): string[] {
+const getGlobbedPaths = function (globPatterns: string | string[], excludes?: string | RegExp[]): string[] {
   // URL paths regex
-  var urlRegex = new RegExp('^(?:[a-z]+:)?\/\/', 'i');
+  const urlRegex = new RegExp('^(?:[a-z]+:)?\/\/', 'i');
 
   // The output array
-  var output = [];
+  let output = [];
 
   // If glob pattern is array then we use each pattern in a recursive way, otherwise we use glob
-  if (_.isArray(globPatterns)) {
-    globPatterns.forEach(function (globPattern) {
-      output = _.union(output, getGlobbedPaths(globPattern, excludes));
+  if (Array.isArray(globPatterns)) {
+    globPatterns.forEach(globPattern => {
+      output = Array.from(new Set([...output, ...getGlobbedPaths(globPattern, excludes)]));
     });
-  } else if (_.isString(globPatterns)) {
+  } else if (isString(globPatterns)) {
     if (urlRegex.test(globPatterns)) {
-      output.push(globPatterns);
+      output = [...output, globPatterns];
     } else {
-      var files = sync(globPatterns);
+      let files = sync(globPatterns);
       if (excludes) {
-        files = files.map(function (file) {
-          if (_.isArray(excludes)) {
-            for (var i in excludes) {
+        files = files.map(file => {
+          if (Array.isArray(excludes)) {
+            for (const i in excludes) {
               if (excludes.hasOwnProperty(i)) {
                 file = file.replace(excludes[i], '');
               }
@@ -46,7 +58,7 @@ const getGlobbedPaths = function (globPatterns: string | string[], excludes?: st
           return file;
         });
       }
-      output = _.union(output, files);
+      output = Array.from(new Set([...output, ...files]));
     }
   }
 
@@ -56,7 +68,7 @@ const getGlobbedPaths = function (globPatterns: string | string[], excludes?: st
 /**
  * Validate NODE_ENV existence
  */
-const validateEnvironmentVariable = function (): void {
+const validateEnvironmentVariable = (): void => {
   var environmentFiles = sync('./config/env/' + process.env.NODE_ENV + '.js');
   console.log();
   if (!environmentFiles.length) {
@@ -73,7 +85,7 @@ const validateEnvironmentVariable = function (): void {
 
 /** Validate config.domain is set
  */
-const validateDomainIsSet = function (config): void {
+const validateDomainIsSet = (config): void => {
   if (!config.domain) {
     console.log(chalk.red('+ Important warning: config.domain is empty. It should be set to the fully qualified domain of the app.'));
   }
@@ -83,27 +95,30 @@ const validateDomainIsSet = function (config): void {
  * Validate Secure=true parameter can actually be turned on
  * because it requires certs and key files to be available
  */
-const validateSecureMode = function (config): true | void {
+const validateSecureMode = (config: mergedEnvType & {secure?: secureType}): secureType => {
 
   if (!config.secure || config.secure.ssl !== true) {
-    return true;
+    return config.secure;
   }
 
-  var privateKey = existsSync(resolve(config.secure.privateKey));
-  var certificate = existsSync(resolve(config.secure.certificate));
+  // Change to be async
+  const privateKey = existsSync(resolve(config.secure.privateKey));
+  const certificate = existsSync(resolve(config.secure.certificate));
 
   if (!privateKey || !certificate) {
     console.log(chalk.red('+ Error: Certificate file or key file is missing, falling back to non-SSL mode'));
     console.log(chalk.red('  To create them, simply run the following from your shell: sh ./scripts/generate-ssl-certs.sh'));
     console.log();
-    config.secure.ssl = false;
+    return {...config.secure, ssl: false}
+  } else {
+    return config.secure;
   }
 };
 
 /**
  * Validate Session Secret parameter is not set to default in production
  */
-const validateSessionSecret = function (config, testing?: boolean): boolean {
+const validateSessionSecret = (config: mergedEnvType, testing?: boolean): boolean => {
 
   if (process.env.NODE_ENV !== 'production') {
     return true;
@@ -125,9 +140,9 @@ const validateSessionSecret = function (config, testing?: boolean): boolean {
 /**
  * Initialize global configuration files
  */
-var initGlobalConfigFolders = function (config, assets): void {
+const initGlobalConfigFolders = (config: mergedEnvType, assets): foldersType => {
   // Appending files
-  config.folders = {
+  return {
   };
 
 };
@@ -135,97 +150,98 @@ var initGlobalConfigFolders = function (config, assets): void {
 /**
  * Initialize global configuration files
  */
-var initGlobalConfigFiles = function (config, assets): void {
+const initGlobalConfigFiles = (config: mergedEnvType, assets): filesType => {
   // Appending files
-  config.files = {};
-
-  // Setting Globbed model files
-  config.files.models = getGlobbedPaths(assets.models);
-
-  // Setting Globbed route files
-  config.files.routes = getGlobbedPaths(assets.routes);
-
-  // Setting Globbed config files
-  config.files.configs = getGlobbedPaths(assets.config);
-
-  // Setting Globbed policies files
-  config.files.policies = getGlobbedPaths(assets.policies);
+  return {
+    // Setting Globbed model files
+    models: getGlobbedPaths(assets.models),
+    // Setting Globbed route files
+    routes: getGlobbedPaths(assets.routes),
+    // Setting Globbed config files
+    configs: getGlobbedPaths(assets.config),
+    // Setting Globbed policies files
+    policies: getGlobbedPaths(assets.policies)
+  };
 };
 
 /**
  * Initialize global configuration
  */
-var initGlobalConfig = function (): configReturn {
+const initGlobalConfig = (): configReturn => {
   // Validate NODE_ENV existence
   validateEnvironmentVariable();
 
   // Get the default assets
-  const defaultAssets: {server: {[key: string]: string[]}} = require(join(process.cwd(), '/src/config/assets/default'));
+  const defaultAssets: defaultAssetsType = require(join(process.cwd(), '/src/config/assets/default'));
 
   // Get the current assets
-  const environmentAssets: object = require(join(process.cwd(), '/src/config/assets/', process.env.NODE_ENV)) || {};
+  const environmentAssets: envAssetsType = require(join(process.cwd(), '/src/config/assets/', process.env.NODE_ENV)) || {};
 
   // Merge assets
-  let assets: any = _.merge(defaultAssets, environmentAssets);
+  let assets: mergedAssetsType = merge(defaultAssets, environmentAssets);
 
   // Get the default config
-  const defaultConfig: envDefault = require(join(process.cwd(), '/src/config/env/default'));
+  const defaultConfig: defaultEnvType = require(join(process.cwd(), '/src/config/env/default'));
 
   // Get the current config
-  // TODO: Remove `any`
-  const environmentConfig: envTest | envProduction | envDevelopment = require(join(process.cwd(), '/src/config/env/', process.env.NODE_ENV)) || {};
+  const environmentConfig: envEnvType = require(join(process.cwd(), '/src/config/env/', process.env.NODE_ENV)) || {};
 
   // Merge config files
-  let config = _.merge(defaultConfig, environmentConfig);
-
-  // read package.json for MEAN.JS project information
-  const pkg: object = require(resolve('./package.json'));
-  (<configReturn>config).{{camelCase name}} = pkg;
+  let tmpConfig: mergedEnvType & packageJSONType = {
+    ...merge(defaultConfig, environmentConfig),
+    // read package.json for {{{name}}} project information
+    {{camelCase name}}: require(resolve('./package.json'))
+  };
 
   // Extend the config object with the local-NODE_ENV.js custom/local environment. This will override any settings present in the local configuration.
-  config = _.merge(config, (existsSync(join(process.cwd(), '/src/config/env/local-' + process.env.NODE_ENV + '.js')) && require(join(process.cwd(), 'config/env/local-' + process.env.NODE_ENV + '.js'))) || {});
+  tmpConfig = merge(tmpConfig, ((existsSync(join(process.cwd(), '/src/config/env/local-' + process.env.NODE_ENV + '.js')) && require(join(process.cwd(), 'config/env/local-' + process.env.NODE_ENV + '.js')))) || {});
 
-  // Initialize global globbed files
-  initGlobalConfigFiles(config, assets);
+  const config: configReturn = {
+    ...tmpConfig,
+    // Initialize global globbed files
+    files: initGlobalConfigFiles(tmpConfig, assets),
+    // Initialize global globbed folders
+    folders: initGlobalConfigFolders(tmpConfig, assets),
+    // Validate Secure SSL mode can be used
+    ...((<typeof tmpConfig & {secure?: secureType}>tmpConfig).secure ? {secure: validateSecureMode(tmpConfig)} : {}),
+    // Expose configuration utilities
+    utils: {
+      getGlobbedPaths: getGlobbedPaths,
+      validateSessionSecret: validateSessionSecret
+    }
+  };
 
-  // Initialize global globbed folders
-  initGlobalConfigFolders(config, assets);
-
-  // Validate Secure SSL mode can be used
-  validateSecureMode(config);
-
-  // Validate session secret
+    // Validate session secret
   validateSessionSecret(config);
 
   // Print a warning if config.domain is not set
   validateDomainIsSet(config);
 
-  // Expose configuration utilities
-  (<configReturn>config).utils = {
-    getGlobbedPaths: getGlobbedPaths,
-    validateSessionSecret: validateSessionSecret
-  };
-
   return config as configReturn;
 };
 
-export type configReturn = (configObject & (envTest | envProduction | envDevelopment));
+export type configReturn = configObject & mergedEnvType;
 
-interface configObject extends envDefault {
-  files: {
+interface filesType {
     models: string[],
     routes: string[],
     configs: string[],
     policies: string[]
-  },
-  folders: {},
-  {{camelCase name}}: object,
+};
+
+interface packageJSONType {
+  {{camelCase name}}: any
+}
+
+interface foldersType {};
+
+interface configObject extends packageJSONType {
+  files: filesType,
+  folders: foldersType,
   utils: {
-    // TODO: Remove <any>
-    getGlobbedPaths: (globPatterns: any, excludes?: string | any[]) => string[],
-    validateSessionSecret: (config: any, testing?: boolean) => boolean
+    getGlobbedPaths: (globPatterns: string | string[], excludes?: string | RegExp[]) => string[],
+    validateSessionSecret: (config: mergedEnvType, testing?: boolean) => boolean
   }
-  // TODO: Add more of `config
 }
 
 /**

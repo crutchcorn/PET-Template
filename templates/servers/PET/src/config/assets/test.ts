@@ -1,5 +1,7 @@
 module.exports = {
-  tests: {
-    server: ['modules/*/tests/**/*.js'],
-  }
+  tests: ['modules/*/tests/**/*.js']
 };
+
+export interface TestAssets {
+
+}

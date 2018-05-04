@@ -65,6 +65,8 @@ export function initMiddleware(app: appType): void {
   // app.use(favicon(app.locals.favicon));
 
   // Enable logger (morgan) if enabled in the configuration file
+  // TODO: Remove lodash
+  // TODO: getOwnPropertyNames
   if (_.has(config, 'log.format')) {
     app.use(morgan((<any>logger).getLogFormat(), (<any>logger).getMorganOptions()));
   }
@@ -185,10 +187,10 @@ export function initErrorRoutes(app: appType): void {
  */
 export function configureSocketIO(app: appType, store: session.MemoryStore) {
   // Load the Socket.io configuration
-  // var server = require('./socket.io')(app, store);
+  const server = require('./socket.io').default(app, store);
 
   // Return server object
-  // return server;
+  return server;
 }
 
 /**
@@ -224,7 +226,7 @@ export function init(): appType {
   this.initErrorRoutes(app);
 
   // Configure Socket.io
-  // app = this.configureSocketIO(app, store);
+  app = this.configureSocketIO(app, store);
 
   return app;
 }

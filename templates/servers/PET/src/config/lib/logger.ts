@@ -86,6 +86,8 @@ let logger = new winston.Logger({
   humanReadableUnhandledException: true
 } {
 
+  // TODO: Remove lodash
+  // TODO: Why is this cloning?
   const _config = _.clone(config);
   const configFileLogger = _config.log.fileLogger;
 

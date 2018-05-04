@@ -1,5 +1,6 @@
 // TODO: Remove `import *`
 import * as fs from 'fs';
+import {secureType} from './index';
 
 module.exports = {
   secure: {
@@ -91,12 +92,7 @@ module.exports = {
 } as envProduction;
 
 export interface envProduction {
-  secure: {
-    ssl: boolean,
-    privateKey: string,
-    certificate: string,
-    caBundle: string
-  },
+  secure: secureType,
   port: string | number,
   // Binding to 127.0.0.1 is safer in production.
   host: string,

@@ -10,6 +10,7 @@ import * as cookieParser from 'cookie-parser';
 import {MemoryStore} from 'express-session';
 import * as passport from 'passport';
 import chalk from 'chalk';
+import {Response} from 'express';
 import {Express as appType} from 'express-serve-static-core';
 
 // Define the Socket.io configuration method
@@ -71,7 +72,7 @@ export default function (app: appType, store: MemoryStore) {
   // Intercept Socket.io's handshake request
   io.use(function (socket, next) {
     // Use the 'cookie-parser' module to parse the request cookies
-    (<any>cookieParser(config.sessionSecret))(socket.request, {}, function (err) {
+    (cookieParser(config.sessionSecret))(socket.request, (<Response>{}), function (err) {
       // Get the session id from the request cookies
       const sessionId = socket.request.signedCookies ? socket.request.signedCookies[config.sessionKey] : undefined;
 
@@ -86,7 +87,7 @@ export default function (app: appType, store: MemoryStore) {
         socket.request.session = session;
 
         // Use Passport to populate the user details
-        (<any>passport.initialize())(socket.request, {}, function () {
+        (passport.initialize())(socket.request, (<Response>{}), function () {
           passport.session()(socket.request, {}, function () {
             if (socket.request.user) {
               next();
