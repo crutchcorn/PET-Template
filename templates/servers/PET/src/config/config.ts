@@ -85,7 +85,7 @@ const validateEnvironmentVariable = (): void => {
 
 /** Validate config.domain is set
  */
-const validateDomainIsSet = (config): void => {
+const validateDomainIsSet = (config: configReturn): void => {
   if (!config.domain) {
     console.log(chalk.red('+ Important warning: config.domain is empty. It should be set to the fully qualified domain of the app.'));
   }
@@ -140,7 +140,7 @@ const validateSessionSecret = (config: mergedEnvType, testing?: boolean): boolea
 /**
  * Initialize global configuration files
  */
-const initGlobalConfigFolders = (config: mergedEnvType, assets): foldersType => {
+const initGlobalConfigFolders = (config: mergedEnvType, assets: mergedAssetsType): foldersType => {
   // Appending files
   return {
   };
@@ -150,7 +150,7 @@ const initGlobalConfigFolders = (config: mergedEnvType, assets): foldersType => 
 /**
  * Initialize global configuration files
  */
-const initGlobalConfigFiles = (config: mergedEnvType, assets): filesType => {
+const initGlobalConfigFiles = (config: mergedEnvType, assets: mergedAssetsType): filesType => {
   // Appending files
   return {
     // Setting Globbed model files

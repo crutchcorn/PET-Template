@@ -1,16 +1,40 @@
 import {configReturn} from '../config'
 const config: configReturn = require('../config');
 import * as _ from 'lodash';
-import * as chalk from 'chalk';
+import chalk from 'chalk';
+import {Options as MorganOptions} from 'morgan';
 import * as fs from 'fs';
 import * as winston from 'winston';
+import {LoggerInstance} from 'winston';
+
+interface logOptions {
+  level: 'debug',
+  colorize: false,
+  filename: string,
+  timestamp: true,
+  maxsize: number,
+  maxFiles: number,
+  json: boolean,
+  eol: '\n',
+  tailable: true,
+  showLevel: true,
+  handleExceptions: true,
+  humanReadableUnhandledException: true
+}
+
+export interface Logger extends LoggerInstance {
+  setupFileLogger?: () => boolean,
+  getLogOptions?: () => false | logOptions,
+  getMorganOptions?: () => MorganOptions,
+  getLogFormat?: () => string
+}
 
 // list of valid formats for the logging
 const validFormats: string[] = ['combined', 'common', 'dev', 'short', 'tiny'];
 
 // Instantiating the default winston application logger with the Console
 // transport
-let logger = new winston.Logger({
+let logger: Logger = new winston.Logger({
   transports: [
     new winston.transports.Console({
       level: 'info',
@@ -23,24 +47,13 @@ let logger = new winston.Logger({
   exitOnError: false
 });
 
-// TODO: Fix typings here
-// A stream object with a write function that will call the built-in winston
-// logger.info() function.
-// Useful for integrating with stream-related mechanism like Morgan's stream
-// option to log all HTTP requests to a file
-(<any>logger).stream = {
-  write: function (msg: string) {
-    logger.info(msg);
-  }
-};
-
 /**
  * Instantiate a winston's File transport for disk file logging
  *
  */
-(<any>logger).setupFileLogger = function setupFileLogger(): boolean {
+logger.setupFileLogger = function setupFileLogger(): boolean {
 
-  var fileLoggerTransport = this.getLogOptions();
+  const fileLoggerTransport = this.getLogOptions();
   if (!fileLoggerTransport) {
     return false;
   }
@@ -56,8 +69,8 @@ let logger = new winston.Logger({
   } catch (err) {
     if (process.env.NODE_ENV !== 'test') {
       console.log();
-      console.log((<any>chalk).red('An error has occured during the creation of the File transport logger.'));
-      console.log((<any>chalk).red(err));
+      console.log(chalk.red('An error has occured during the creation of the File transport logger.'));
+      console.log(chalk.red(err));
       console.log();
     }
 
@@ -71,20 +84,7 @@ let logger = new winston.Logger({
  *
  * Returns a Winston object for logging with the File transport
  */
-(<any>logger).getLogOptions = function getLogOptions(): false | {
-  level: string,
-  colorize: false,
-  filename: any,
-  timestamp: true,
-  maxsize: number,
-  maxFiles: number,
-  json: boolean,
-  eol: string,
-  tailable: true,
-  showLevel: true,
-  handleExceptions: true,
-  humanReadableUnhandledException: true
-} {
+logger.getLogOptions = function getLogOptions(): false | logOptions {
 
   // TODO: Remove lodash
   // TODO: Why is this cloning?
@@ -121,9 +121,13 @@ let logger = new winston.Logger({
  * Returns a log.options object with a writable stream based on winston
  * file logging transport (if available)
  */
-(<any>logger).getMorganOptions = function getMorganOptions(): {stream: any} {
+logger.getMorganOptions = function getMorganOptions(): MorganOptions {
   return {
-    stream: logger.stream
+    stream: {
+      write: function (msg: string) {
+        logger.info(msg);
+      }
+    }
   };
 };
 
@@ -132,16 +136,16 @@ let logger = new winston.Logger({
  *
  * Returns the log.format option set in the current environment configuration
  */
-(<any>logger).getLogFormat = function getLogFormat(): string {
-  var format: string = config.log && config.log.format ? config.log.format.toString() : 'combined';
+logger.getLogFormat = function getLogFormat(): string {
+  let format: string = config.log && config.log.format ? config.log.format.toString() : 'combined';
 
   // make sure we have a valid format
-  if (!_.includes(validFormats, format)) {
+  if (!validFormats.includes(format)) {
     format = 'combined';
 
     if (process.env.NODE_ENV !== 'test') {
       console.log();
-      console.log((<any>chalk).yellow('Warning: An invalid format was provided. The logger will use the default format of "' + format + '"'));
+      console.log(chalk.yellow('Warning: An invalid format was provided. The logger will use the default format of "' + format + '"'));
       console.log();
     }
   }
@@ -149,6 +153,6 @@ let logger = new winston.Logger({
   return format;
 };
 
-(<any>logger).setupFileLogger();
+logger.setupFileLogger();
 
-module.exports = logger;
+export default logger;

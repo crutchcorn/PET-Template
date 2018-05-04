@@ -1,5 +1,5 @@
 // TODO: Remove `* from`
-import * as logger from './logger';
+import logger from './logger';
 import * as bodyParser from 'body-parser';
 import * as favicon from 'serve-favicon';
 import * as methodOverride from 'method-override';
@@ -68,7 +68,7 @@ export function initMiddleware(app: appType): void {
   // TODO: Remove lodash
   // TODO: getOwnPropertyNames
   if (_.has(config, 'log.format')) {
-    app.use(morgan((<any>logger).getLogFormat(), (<any>logger).getMorganOptions()));
+    app.use(morgan(logger.getLogFormat(), logger.getMorganOptions()));
   }
 
   // Environment dependent middleware
