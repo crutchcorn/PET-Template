@@ -1,9 +1,9 @@
-import {configReturn} from '../config'
+import {configReturn} from '../config';
+
 const config: configReturn = require('../config');
-import * as _ from 'lodash';
 import chalk from 'chalk';
 import {Options as MorganOptions} from 'morgan';
-import * as fs from 'fs';
+import {openSync} from 'fs';
 import * as winston from 'winston';
 import {LoggerInstance} from 'winston';
 
@@ -61,7 +61,7 @@ logger.setupFileLogger = function setupFileLogger(): boolean {
   try {
     // Check first if the configured path is writable and only then
     // instantiate the file logging transport
-    if (fs.openSync(fileLoggerTransport.filename, 'a+')) {
+    if (openSync(fileLoggerTransport.filename, 'a+')) {
       logger.add(winston.transports.File, fileLoggerTransport);
     }
 
@@ -86,12 +86,12 @@ logger.setupFileLogger = function setupFileLogger(): boolean {
  */
 logger.getLogOptions = function getLogOptions(): false | logOptions {
 
-  // TODO: Remove lodash
-  // TODO: Why is this cloning?
-  const _config = _.clone(config);
-  const configFileLogger = _config.log.fileLogger;
+  const configFileLogger = config.log.fileLogger;
 
-  if (!_.has(_config, 'log.fileLogger.directoryPath') || !_.has(_config, 'log.fileLogger.fileName')) {
+  const logFileConfig = !(Object.getOwnPropertyNames(configFileLogger).includes('directoryPath')
+    || Object.getOwnPropertyNames(configFileLogger).includes('fileName'));
+
+  if (logFileConfig) {
     console.log('unable to find logging file configuration');
     return false;
   }
@@ -105,14 +105,14 @@ logger.getLogOptions = function getLogOptions(): false | logOptions {
     timestamp: true,
     maxsize: configFileLogger.maxsize ? configFileLogger.maxsize : 10485760,
     maxFiles: configFileLogger.maxFiles ? configFileLogger.maxFiles : 2,
-    json: (_.has(configFileLogger, 'json')) ? configFileLogger.json : false,
+    json: Object.getOwnPropertyNames(configFileLogger).includes('json') ?
+      configFileLogger.json : false,
     eol: '\n',
     tailable: true,
     showLevel: true,
     handleExceptions: true,
     humanReadableUnhandledException: true
   };
-
 };
 
 /**

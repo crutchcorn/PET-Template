@@ -1,15 +1,7 @@
 /**
  * Module dependencies.
  */
-// TODO: Remove lodash dep
-/**
- * This will be the hardest
- * Combine like arrays
- * Ignore undefined
- * Combine objects
- * Otherwise do {...}
- */
-import {merge} from 'lodash';
+import {merge} from './lib/tools';
 import chalk from 'chalk';
 import {sync} from 'glob';
 import {existsSync} from 'fs';
@@ -69,7 +61,7 @@ const getGlobbedPaths = function (globPatterns: string | string[], excludes?: st
  * Validate NODE_ENV existence
  */
 const validateEnvironmentVariable = (): void => {
-  var environmentFiles = sync('./config/env/' + process.env.NODE_ENV + '.js');
+  const environmentFiles = sync('./config/env/' + process.env.NODE_ENV + '.js');
   console.log();
   if (!environmentFiles.length) {
     if (process.env.NODE_ENV) {

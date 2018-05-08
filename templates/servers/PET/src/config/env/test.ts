@@ -27,6 +27,7 @@ module.exports = {
   uploads: {
     profile: {
       image: {
+        // TODO: Fix the location here
         dest: './modules/users/client/img/profile/uploads/',
         limits: {
           fileSize: 100000 // Limit filesize (100kb) for testing purposes

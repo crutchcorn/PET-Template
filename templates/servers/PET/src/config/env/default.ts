@@ -42,8 +42,7 @@ module.exports = {
     p3p: 'ABCDEF' as string,
     xssProtection: true as boolean
   },
-  logo: 'modules/core/client/img/brand/logo.png' as string,
-  favicon: 'modules/core/client/img/brand/favicon.ico' as string,
+  favicon: 'src/favicon.ico' as string,
   illegalUsernames: ['administrator', 'password', 'admin', 'user',
     'unknown', 'anonymous', 'null', 'undefined', 'api'
   ] as string[],
@@ -106,7 +105,6 @@ export interface envDefault {
     p3p: string,
     xssProtection: boolean
   },
-  logo: string,
   favicon: string,
   illegalUsernames: string[],
   aws: {

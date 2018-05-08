@@ -1,26 +1,22 @@
-// TODO: Remove `* from`
 import logger from './logger';
-import * as bodyParser from 'body-parser';
+import {urlencoded, json as bodyParseJson} from 'body-parser';
 import * as favicon from 'serve-favicon';
 import * as methodOverride from 'method-override';
 import * as express from 'express';
 import {resolve} from 'path';
-import * as helmet from 'helmet';
+import {frameguard, xssFilter, noSniff, ieNoOpen, hsts} from 'helmet';
 import * as session from 'express-session';
 import * as lusca from 'lusca';
 import * as compress from 'compression';
-import * as _ from 'lodash';
 import * as morgan from 'morgan';
 import * as cookieParser from 'cookie-parser';
 import {Request, Response, NextFunction} from 'express';
 import {Express as appType} from 'express-serve-static-core';
 
 const config = require('../config');
-const flash = require('connect-flash');
 
 /**
  * Initialize local variables
- * TODO: See if this is all needed
  */
 export function initLocalVariables(app: appType): void {
   // Setting application local variables
@@ -34,7 +30,6 @@ export function initLocalVariables(app: appType): void {
   app.locals.facebookAppId = config.facebook.clientID;
   app.locals.twitterUsername = config.twitter.username;
   app.locals.livereload = config.livereload;
-  app.locals.logo = config.logo;
   app.locals.favicon = config.favicon;
   app.locals.env = process.env.NODE_ENV;
   app.locals.domain = config.domain;
@@ -61,13 +56,12 @@ export function initMiddleware(app: appType): void {
   }));
 
   // Initialize favicon middleware
-  // TODO: See if this is needed
-  // app.use(favicon(app.locals.favicon));
+  app.use(favicon(app.locals.favicon));
 
   // Enable logger (morgan) if enabled in the configuration file
-  // TODO: Remove lodash
-  // TODO: getOwnPropertyNames
-  if (_.has(config, 'log.format')) {
+  const hasFormat = Object.getOwnPropertyNames(config).includes('log') &&
+    Object.getOwnPropertyNames(config.log).includes('format');
+  if (hasFormat) {
     app.use(morgan(logger.getLogFormat(), logger.getMorganOptions()));
   }
 
@@ -80,16 +74,14 @@ export function initMiddleware(app: appType): void {
   }
 
   // Request body parsing middleware should be above methodOverride
-  app.use(bodyParser.urlencoded({
+  app.use(urlencoded({
     extended: true
   }));
-  app.use(bodyParser.json());
+  app.use(bodyParseJson());
   app.use(methodOverride());
 
-  // Add the cookie parser and flash middleware
-  // TODO: See if flash middleware is needed
+  // Add the cookie parser
   app.use(cookieParser());
-  app.use(flash());
 }
 
 /**
@@ -131,11 +123,11 @@ export function initHelmetHeaders(app: appType): void {
   // six months expiration period specified in seconds
   var SIX_MONTHS = 15778476;
 
-  app.use(helmet.frameguard());
-  app.use(helmet.xssFilter());
-  app.use(helmet.noSniff());
-  app.use(helmet.ieNoOpen());
-  app.use(helmet.hsts({
+  app.use(frameguard());
+  app.use(xssFilter());
+  app.use(noSniff());
+  app.use(ieNoOpen());
+  app.use(hsts({
     maxAge: SIX_MONTHS,
     includeSubdomains: true,
     force: true
