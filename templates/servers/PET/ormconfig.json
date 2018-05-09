@@ -1,5 +1,7 @@
 [
   {
+    // TODO: Move TypeORM settings into config files
+    // TODO: Look into merging logging with morgan stuff
     "name": "default",
     "type": "postgres",
     "host": "localhost",

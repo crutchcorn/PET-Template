@@ -57,6 +57,7 @@ export function forgot(req: Request, res: Response) {
 
   const generateHTML = (userTokenObj: {user: User, token: string}) => new Promise((resolve, reject) => {
     let httpTransport = 'http://';
+    // TODO: Remmove `any`
     if ((<any>config).secure && (<any>config).secure.ssl === true) {
       httpTransport = 'https://';
     }

@@ -1,5 +1,3 @@
-// TODO: Remove `import *`
-import * as fs from 'fs';
 import {secureType} from './index';
 
 module.exports = {
@@ -12,29 +10,15 @@ module.exports = {
   port: process.env.PORT || 8443,
   // Binding to 127.0.0.1 is safer in production.
   host: process.env.HOST || '0.0.0.0',
-  // TODO: Replace this with TypeORM database stuff if possible
-  // db: {
-  //   uri: process.env.MONGOHQ_URL || process.env.MONGODB_URI || 'mongodb://' + (process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost') + '/mean',
-  //   options: {
-  //     /**
-  //     * Uncomment to enable ssl certificate based authentication to mongodb
-  //     * servers. Adjust the settings below for your specific certificate
-  //     * setup.
-  //     * for connect to a replicaset, rename server:{...} to replset:{...}
-  //
-  //     ssl: true,
-  //     sslValidate: false,
-  //     checkServerIdentity: false,
-  //     sslCA: fs.readFileSync('./config/sslcerts/ssl-ca.pem'),
-  //     sslCert: fs.readFileSync('./config/sslcerts/ssl-cert.pem'),
-  //     sslKey: fs.readFileSync('./config/sslcerts/ssl-key.pem'),
-  //     sslPass: '1234'
-  //
-  //     */
-  //   },
-  //   // Enable mongoose debug mode
-  //   debug: process.env.MONGODB_DEBUG || false
-  // },
+  db: {
+    host:  process.env.DATABASE_URL || 'DATABASE_URL',
+    port: process.env.DATABASE_PORT || 'DATABASE_PORT',
+    username: process.env.DATABASE_USER || 'DATABASE_USER',
+    password: process.env.DATABASE_PASS || 'DATABASE_PASS',
+    database: process.env.DATABASE_DB || 'DATABASE_DB',
+    // Set to false so the database is not changing in ways that are not expected
+    synchronize: false,
+  },
   log: {
     // logging with Morgan - https://github.com/expressjs/morgan
     // Can specify one of 'combined', 'common', 'dev', 'short', 'tiny'
@@ -47,6 +31,7 @@ module.exports = {
       json: false
     }
   },
+  // TODO: Get this working
   facebook: {
     clientID: process.env.FACEBOOK_ID || 'APP_ID',
     clientSecret: process.env.FACEBOOK_SECRET || 'APP_SECRET',

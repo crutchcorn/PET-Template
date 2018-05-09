@@ -1,24 +1,25 @@
 const defaultEnvConfig = require('./default');
 
 module.exports = {
-  // TODO: Replace this with TypeORM database stuff if possible
-  // db: {
-  //   uri: process.env.MONGOHQ_URL || process.env.MONGODB_URI || 'mongodb://' + (process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost') + '/mean-test',
-  //   options: {},
-  //   // Enable mongoose debug mode
-  //   debug: process.env.MONGODB_DEBUG || false
-  // },
+  db: {
+    host:  process.env.DATABASE_URL || "localhost",
+    port: process.env.DATABASE_PORT || 5432,
+    username: process.env.DATABASE_USER || "test",
+    password: process.env.DATABASE_PASS || "test",
+    database: process.env.DATABASE_DB || "test",
+    synchronize: true,
+  },
   log: {
     // logging with Morgan - https://github.com/expressjs/morgan
     // Can specify one of 'combined', 'common', 'dev', 'short', 'tiny'
-    // format: 'dev'
-    // fileLogger: {
-    //   directoryPath: process.cwd(),
-    //   fileName: 'app.log',
-    //   maxsize: 10485760,
-    //   maxFiles: 2,
-    //   json: false
-    // }
+    format: 'dev',
+    fileLogger: {
+      directoryPath: process.cwd(),
+      fileName: 'app.log',
+      maxsize: 10485760,
+      maxFiles: 2,
+      json: false
+    }
   },
   port: process.env.PORT || 3001,
   app: {

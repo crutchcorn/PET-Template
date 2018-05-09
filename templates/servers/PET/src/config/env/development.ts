@@ -1,13 +1,19 @@
+import {ConnectionOptions} from 'typeorm';
+
 const defaultEnvConfig = require('./default');
 
 module.exports = {
-  // TODO: Replace this with TypeORM database stuff if possible
-  // db: {
-    // uri: process.env.MONGOHQ_URL || process.env.MONGODB_URI || 'mongodb://' + (process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost') + '/mean-dev',
-    // options: {},
-    // // Enable mongoose debug mode
-    // debug: process.env.MONGODB_DEBUG || false
-  // },
+  // TODO: Look into merging logging with morgan stuff
+  db: {
+    // The following settings will work for MySQL/MariaDb/PostgreSQL/MSSQL
+    // The port default is set for PostgreSQL
+    host:  process.env.DATABASE_URL || "localhost",
+    port: process.env.DATABASE_PORT || 5432,
+    username: process.env.DATABASE_USER || "test",
+    password: process.env.DATABASE_PASS || "test",
+    database: process.env.DATABASE_DB || "test",
+    synchronize: true,
+  },
   log: {
     // logging with Morgan - https://github.com/expressjs/morgan
     // Can specify one of 'combined', 'common', 'dev', 'short', 'tiny'
@@ -69,6 +75,7 @@ module.exports = {
 } as envDevelopment;
 
 export interface envDevelopment {
+  db: ConnectionOptions,
   log: {
     format: string,
     fileLogger: {
