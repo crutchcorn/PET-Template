@@ -1,3 +1,4 @@
+// TODO: Fix `*` from imports
 import {NextFunction, Request, Response} from 'express';
 import * as path from 'path';
 import * as passport from 'passport';
@@ -10,7 +11,7 @@ import * as validator from 'validator';
 // errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
 
 // URLs for which user can't be redirected on signin
-var noReturnUrls = [
+const noReturnUrls = [
   '/authentication/signin',
   '/authentication/signup'
 ];
@@ -244,39 +245,42 @@ export function me(req: Request, res: Response) {
 /**
  * Remove OAuth provider
  */
-// export function removeOAuthProvider(req, res, next) {
-//   var user = req.user;
-//   var provider = req.query.provider;
-//
-//   if (!user) {
-//     return res.status(401).json({
-//       message: 'User is not authenticated'
-//     });
-//   } else if (!provider) {
-//     return res.status(400).send();
-//   }
-//
-//   // Delete the additional provider
-//   if (user.additionalProvidersData[provider]) {
-//     delete user.additionalProvidersData[provider];
-//
-//     // Then tell mongoose that we've updated the additionalProvidersData field
-//     user.markModified('additionalProvidersData');
-//   }
-//
-//   user.save(function (err) {
-//     if (err) {
-//       return res.status(422).send({
-//         message: errorHandler.getErrorMessage(err)
-//       });
-//     } else {
-//       req.login(user, function (err) {
-//         if (err) {
-//           return res.status(400).send(err);
-//         } else {
-//           return res.json(user);
-//         }
-//       });
-//     }
-//   });
-// };
+export async function removeOAuthProvider(req, res, next) {
+  try {
+    let user = req.user;
+    const provider = req.query.provider;
+
+    if (!user) {
+      return res.status(401).json({
+        message: 'User is not authenticated'
+      });
+    } else if (!provider) {
+      return res.status(400).send();
+    }
+
+    // Delete the additional provider
+    if (user.additionalProvidersData[provider]) {
+      // Immutable version of this command
+      user.additionalProvidersData = Object.keys(user.additionalProvidersData)
+        .reduce((prev, key) => {
+          return {
+            ...prev,
+            ...(key !== provider ? {[key]: user.additionalProvidersData[key]} : {})
+          }
+        }, {});
+    }
+    await userRepository.save(user);
+    req.login(user, function (err) {
+      if (err) {
+        return res.status(400).send(err);
+      } else {
+        return res.json(user);
+      }
+    });
+  } catch (err) {
+    return res.status(422).send({
+      // TODO: Fix the error handling
+      // message: errorHandler.getErrorMessage(err)
+    });
+  }
+}

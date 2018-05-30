@@ -92,9 +92,11 @@ export class User {
   @Column()
   provider: string;
 
-  // TODO: Break out into table to properly store this data
-  // providerData: {},
-  // additionalProvidersData: {},
+  @Column('json')
+  providerData: any;
+
+  @Column('json')
+  additionalProvidersData: any;
 
   // TODO: Add default of 'User'
   // TODO: Add required validation
@@ -245,5 +247,3 @@ export function generateRandomPassphrase(): Promise<string> {
     }
   });
 }
-
-// TODO: Add seeding? IDK if I want to or if it's needed
