@@ -1,6 +1,7 @@
 /**
  * Module dependencies
  */
+/*
 import {Strategy as FacebookStrategy} from 'passport-facebook';
 import {use as passportUse} from 'passport';
 import {saveOAuthUserProfile} from '../../controllers/users.controller';
@@ -50,3 +51,4 @@ module.exports = function (config) {
     }
   }));
 };
+*/

@@ -3,7 +3,7 @@ import {NextFunction, Request, Response} from 'express';
 import * as path from 'path';
 import * as passport from 'passport';
 import {getManager} from 'typeorm';
-import {User} from '../../models/user.model';
+import {User, findUniqueUsername} from '../../models/user.model';
 import {Role} from '../../models/role.model';
 import {configReturn} from '../../../../config/config';
 const config: configReturn = require(path.resolve('./src/config/config'));
@@ -94,10 +94,10 @@ export function signout(req: Request, res: Response) {
  * OAuth provider call
  */
 export function oauthCall(req: Request, res: Response, next: NextFunction) {
-  var strategy = req.params.strategy;
+  const strategy = req.params.strategy;
   // Authenticate
   passport.authenticate(strategy)(req, res, next);
-};
+}
 
 /**
  * OAuth callback
@@ -105,21 +105,19 @@ export function oauthCall(req: Request, res: Response, next: NextFunction) {
 export function oauthCallback(req: Request, res: Response, next: NextFunction) {
   const strategy = req.params.strategy;
 
-  // info.redirect_to contains inteded redirect path
   passport.authenticate(strategy, function (err, user, info) {
     if (err) {
-      return res.redirect('/authentication/signin?err=');
-      // return res.redirect('/authentication/signin?err=' + encodeURIComponent(errorHandler.getErrorMessage(err)));
+      return res.status(500).send({message: 'There was an error authenticating'});
     }
     if (!user) {
-      return res.redirect('/authentication/signin');
+      return res.status(404).send({message: 'There is no user with the matching info'});
     }
     req.login(user, function (err) {
       if (err) {
-        return res.redirect('/authentication/signin');
+        return res.status(500).send({message: 'There was an error logging in'});
       }
 
-      return res.redirect(info.redirect_to || '/');
+      return res.send({message: 'User has been logged in'});
     });
   })(req, res, next);
 }
@@ -148,99 +146,95 @@ export function me(req: Request, res: Response) {
  * Helper function to save or update a OAuth user profile
  */
 // TODO: Re-enable this feature
-// export function saveOAuthUserProfile(req, providerUserProfile, done) {
-//   // Setup info and user objects
-//   var info = {};
-//   var user;
-//
-//   // Set redirection path on session.
-//   // Do not redirect to a signin or signup page
-//   if (noReturnUrls.indexOf(req.session.redirect_to) === -1) {
-//     info.redirect_to = req.session.redirect_to;
-//   }
-//
-//   // Define a search query fields
-//   var searchMainProviderIdentifierField = 'providerData.' + providerUserProfile.providerIdentifierField;
-//   var searchAdditionalProviderIdentifierField = 'additionalProvidersData.' + providerUserProfile.provider + '.' + providerUserProfile.providerIdentifierField;
-//
-//   // Define main provider search query
-//   var mainProviderSearchQuery = {};
-//   mainProviderSearchQuery.provider = providerUserProfile.provider;
-//   mainProviderSearchQuery[searchMainProviderIdentifierField] = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
-//
-//   // Define additional provider search query
-//   var additionalProviderSearchQuery = {};
-//   additionalProviderSearchQuery[searchAdditionalProviderIdentifierField] = providerUserProfile.providerData[providerUserProfile.providerIdentifierField];
-//
-//   // Define a search query to find existing user with current provider profile
-//   var searchQuery = {
-//     $or: [mainProviderSearchQuery, additionalProviderSearchQuery]
-//   };
-//
-//   // Find existing user with this provider account
-//   User.findOne(searchQuery, function (err, existingUser) {
-//     if (err) {
-//       return done(err);
-//     }
-//
-//     if (!req.user) {
-//       if (!existingUser) {
-//         var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
-//
-//         User.findUniqueUsername(possibleUsername, null, function (availableUsername) {
-//           user = new User({
-//             firstName: providerUserProfile.firstName,
-//             lastName: providerUserProfile.lastName,
-//             username: availableUsername,
-//             displayName: providerUserProfile.displayName,
-//             profileImageURL: providerUserProfile.profileImageURL,
-//             provider: providerUserProfile.provider,
-//             providerData: providerUserProfile.providerData
-//           });
-//
-//           // Email intentionally added later to allow defaults (sparse settings) to be applid.
-//           // Handles case where no email is supplied.
-//           // See comment: https://github.com/meanjs/mean/pull/1495#issuecomment-246090193
-//           user.email = providerUserProfile.email;
-//
-//           // And save the user
-//           user.save(function (err) {
-//             return done(err, user, info);
-//           });
-//         });
-//       } else {
-//         return done(err, existingUser, info);
-//       }
-//     } else {
-//       // User is already logged in, join the provider data to the existing user
-//       user = req.user;
-//
-//       // Check if an existing user was found for this provider account
-//       if (existingUser) {
-//         if (user.id !== existingUser.id) {
-//           return done(new Error('Account is already connected to another user'), user, info);
-//         }
-//
-//         return done(new Error('User is already connected using this provider'), user, info);
-//       }
-//
-//       // Add the provider data to the additional provider data field
-//       if (!user.additionalProvidersData) {
-//         user.additionalProvidersData = {};
-//       }
-//
-//       user.additionalProvidersData[providerUserProfile.provider] = providerUserProfile.providerData;
-//
-//       // Then tell mongoose that we've updated the additionalProvidersData field
-//       user.markModified('additionalProvidersData');
-//
-//       // And save the user
-//       user.save(function (err) {
-//         return done(err, user, info);
-//       });
-//     }
-//   });
-// };
+export async function saveOAuthUserProfile(providerUserProfile: {
+    firstName: string,
+    lastName: string,
+    displayName: string,
+    email: string,
+    username: string,
+    profileImageURL: string,
+    provider: string,
+    providerIdentifierField: string,
+    providerData: any
+  }, done: Function, req?: Request) {
+  // Setup info and user objects
+  let info: any = {};
+  let user: any;
+
+  // Set redirection path on session.
+  // Do not redirect to a signin or signup page
+  // TODO: This is a no-no - don't redirect when things don't work
+  if (req && noReturnUrls.indexOf(req.session.redirect_to) === -1) {
+    info.redirect_to = req.session.redirect_to;
+  }
+
+  // Define a search query fields
+  // This is only for PostgreSQL - TODO: Add for MySQL/etc
+  const searchAdditionalProviderIdentifierField = providerUserProfile.provider + '->>' + providerUserProfile.providerIdentifierField;
+
+  // Define main provider search query and additional provider search query
+  // This is only for PostgreSQL - TODO: Add for MySQL/etc
+  const searchSQL = `SELECT * FROM "user" AS provData WHERE
+  (provData."providerData" ->> '${providerUserProfile.providerIdentifierField}' = '${providerUserProfile.providerData[providerUserProfile.providerIdentifierField]}' AND provider = '${providerUserProfile.provider}')
+  OR
+  (provData."additionalProvidersData" -> '${searchAdditionalProviderIdentifierField}' = '${providerUserProfile.providerData[providerUserProfile.providerIdentifierField]}')`;
+
+  // Find existing user with this provider account
+  try {
+    const existingUser: User = await userRepository.query(searchSQL);
+
+    if (!req || !req.user) {
+      if (!existingUser) {
+        const possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
+
+        // TOOD: Enable this again
+        const availableUsername = await findUniqueUsername(possibleUsername);
+        user = userRepository.create({
+          firstName: providerUserProfile.firstName,
+          lastName: providerUserProfile.lastName,
+          username: availableUsername,
+          displayName: providerUserProfile.displayName,
+          profileImageURL: providerUserProfile.profileImageURL,
+          provider: providerUserProfile.provider,
+          providerData: providerUserProfile.providerData,
+          // Email used to be added later to allow defaults (sparse settings) to be applied when MEANJS was still the base.
+          // See comment: https://github.com/meanjs/mean/pull/1495#issuecomment-246090193
+          email: providerUserProfile.email
+        });
+
+        // And save the user
+        await userRepository.save(user);
+        return done(null, user, info);
+      } else {
+        // User is not logged in but their data is being attempted to be modified?
+        return done(new Error('User is not authorized to do this'), existingUser, info);
+      }
+    } else {
+      // User is already logged in, join the provider data to the existing user
+      user = req.user;
+
+      // Check if an existing user was found for this provider account
+      if (existingUser) {
+        if (user.id !== existingUser.id) {
+          return done(new Error('Account is already connected to another user'), user, info);
+        }
+
+        return done(new Error('User is already connected using this provider'), user, info);
+      }
+
+      user.additionalProvidersData = {
+        [providerUserProfile.provider]: providerUserProfile.providerData,
+        // Add the provider data to the additional provider data field
+        ...(user.additionalProvidersData ? user.additionalProvidersData : {})
+      };
+
+      await userRepository.save(user);
+      return done(null, user, info);
+    }
+  } catch (err) {
+    return done(err, user, info);
+  }
+}
 
 /**
  * Remove OAuth provider
@@ -279,8 +273,7 @@ export async function removeOAuthProvider(req, res, next) {
     });
   } catch (err) {
     return res.status(422).send({
-      // TODO: Fix the error handling
-      // message: errorHandler.getErrorMessage(err)
+      message: err
     });
   }
 }

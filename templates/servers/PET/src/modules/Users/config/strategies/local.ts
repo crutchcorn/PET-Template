@@ -4,7 +4,7 @@ import {User} from '../../models/user.model';
 import {getManager} from 'typeorm';
 
 let userRepository = getManager().getRepository(User);
-module.exports = function () {
+export default function () {
   // Use local strategy
   passportUse(new LocalStrategy({
       usernameField: 'usernameOrEmail',

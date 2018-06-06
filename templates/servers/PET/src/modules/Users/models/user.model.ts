@@ -91,11 +91,12 @@ export class User {
   // TODO: Add enum validation
   @Column()
   provider: string;
+  // findUniqueUsername
 
-  @Column('json')
+  @Column('json', {nullable: true})
   providerData: any;
 
-  @Column('json')
+  @Column('json', {nullable: true})
   additionalProvidersData: any;
 
   // TODO: Add default of 'User'
@@ -189,27 +190,25 @@ export class User {
  *  var possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
  *  User.findUniqueUsername(possibleUsername, null, availableUsername => {})
  *  TODO: Make callback more type safe
+ *  TODO: Actually function plz :|
  */
-export async function findUniqueUsername(username: string, suffix: number, callback: Function) {
+export const findUniqueUsername = (username: string, suffix?: number, tries: number = 0) => new Promise<string>(async (resolve, reject) => {
   const possibleUsername = `${username.toLowerCase()}${suffix || ''}`;
 
-  // get a post repository to perform operations with post
   const userRepository = getManager().getRepository(User);
 
-  // load a post by a given post id
   try {
     const user = await userRepository.findOne({username: possibleUsername});
 
-    // if post was not found return 404 to the client
     if (!user) {
-      callback(possibleUsername);
+      resolve(possibleUsername);
     } else {
-      return this.findUniqueUsername(username, (suffix || 0) + 1, callback);
+      resolve(this.findUniqueUsername(username, (suffix || 0) + 1, tries + 1));
     }
   } catch (err) {
-    // res.status(500).send({message: "There was an error trying to find a user with that username"});
+    reject(err);
   }
-};
+});
 
 
 /**

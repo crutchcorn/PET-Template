@@ -1,4 +1,4 @@
-import {signin, signout, signup} from '../controllers/users.controller';
+import {oauthCall, oauthCallback, signin, signout, signup} from '../controllers/users.controller';
 import {forgot, validateResetToken, reset} from '../controllers/users/users.password.controller';
 
 /**
@@ -25,8 +25,7 @@ export default function (app) {
     .get(signout);
 
   // Setting the oauth routes
-  // TODO: Re-enable this feature
-  // app.route('/api/auth/:strategy').get(users.oauthCall);
-  // app.route('/api/auth/:strategy/callback').get(users.oauthCallback);
+  app.route('/api/auth/:strategy').get(oauthCall);
+  app.route('/api/auth/:strategy/callback').get(oauthCallback);
 
 };
