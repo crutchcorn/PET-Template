@@ -12,7 +12,8 @@
     "v8flags": "^3.0.2"
   },
   "engines": {
-    "node": ">=8.9.4"
+    "node": ">=8.9.4",
+    "npm": "6.1.x"
   },
   "preferGlobal": true,
   "devDependencies": {
@@ -27,7 +28,8 @@
     "client": "npm-run-all client:peta",
     "client:peta": "npm-run-all --sequential client:peta:build client:peta:run",
     "client:peta:build": "node index.js -f  --name 'projectNameHereRegexEasy' --server n --client && cd dist/client && npm install",
-    "client:peta:run": "cd dist/client && npm start"
+    "client:peta:run": "cd dist/client && npm start",
+    "heroku-postbuild": "npm-run-all server:pet:build"
   },
   "bin": {
     "generate-me": "index.js"
