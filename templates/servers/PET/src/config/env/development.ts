@@ -7,12 +7,12 @@ module.exports = {
   db: {
     // The following settings will work for MySQL/MariaDb/PostgreSQL/MSSQL
     // The port default is set for PostgreSQL
-    host:  process.env.DATABASE_URL || "localhost",
+    host:  process.env.DATABASE_URL_HEROKU || process.env.DATABASE_URL || "localhost",
     port: process.env.DATABASE_PORT || 5432,
     username: process.env.DATABASE_USER || "test",
     password: process.env.DATABASE_PASS || "test",
     database: process.env.DATABASE_DB || "test",
-    synchronize: true,
+    synchronize: true
   },
   log: {
     // logging with Morgan - https://github.com/expressjs/morgan

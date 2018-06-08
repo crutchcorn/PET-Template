@@ -1,6 +1,6 @@
 module.exports = {
   models: 'src/modules/*/models/*.js',
-  routes: 'src/modules/*/routes/*.js',
+  routes: ['src/modules/!(core)/routes/**/*.js', 'src/modules/core/routes/**/*.js'],
   config: 'src/modules/*/config/*.js',
   policies: 'src/modules/*/policies/*.js',
   sockets: 'src/modules/*/sockets/*.js',
@@ -8,7 +8,7 @@ module.exports = {
 
 export interface DefaultAssets {
   models: string;
-  routes: string;
+  routes: string[];
   config: string;
   policies: string;
   sockets: string;

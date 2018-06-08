@@ -105,6 +105,7 @@ export function initSession(app: appType, store: session.MemoryStore): void {
 
   // Add Lusca CSRF Middleware
   app.use(lusca(config.csrf));
+  app.enable('trust proxy');
 }
 
 /**
@@ -121,7 +122,7 @@ export function initModulesConfiguration(app: appType): void {
  */
 export function initHelmetHeaders(app: appType): void {
   // six months expiration period specified in seconds
-  var SIX_MONTHS = 15778476;
+  const SIX_MONTHS = 15778476;
 
   app.use(frameguard());
   app.use(xssFilter());
@@ -190,7 +191,7 @@ export function configureSocketIO(app: appType, store: session.MemoryStore) {
  */
 export function init(): appType {
   // Initialize express app
-  var app: appType = express();
+  let app: appType = express();
   const store = new session.MemoryStore;
 
   // Initialize local variables

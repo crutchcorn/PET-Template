@@ -21,6 +21,7 @@
     "npm-run-all": "^4.1.2"
   },
   "scripts": {
+    "start": "node index.js",
     "server": "npm-run-all server:pet",
     "server:pet": "npm-run-all --sequential server:pet:build server:pet:run",
     "server:pet:build": "node index.js -f --name 'projectNameHereRegexEasy' --server --client n && cd dist/server && npm install",
