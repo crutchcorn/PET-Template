@@ -69,6 +69,11 @@ export function initMiddleware(app: appType): void {
   if (process.env.NODE_ENV === 'development') {
     // Disable views cache
     app.set('view cache', false);
+    app.use(function(req, res, next) {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      next();
+    });
   } else if (process.env.NODE_ENV === 'production') {
     app.locals.cache = 'memory';
   }

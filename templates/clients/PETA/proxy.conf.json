@@ -1,6 +1,12 @@
 {
-  "/api": {
-    "target": "http://localhost:3000",
-    "secure": false
+  "/api/*": {
+    "target": {
+      "host": "generate-me.herokuapp.com",
+      "protocol": "https:",
+      "port": 443
+    },
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info"
   }
 }

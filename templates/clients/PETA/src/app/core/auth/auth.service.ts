@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 
-import {Observable} from 'rxjs/Observable';
+import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import 'rxjs/add/observable/of';
+
 
 import {User, UserWithoutRole} from '../user/user';
 import {TimeoutService} from '../timeout/timeout.service';

@@ -5,6 +5,7 @@ import * as userActions from '../../core/user/user.actions';
 import {Store} from '@ngrx/store';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: '{{dashCase name}}-login',
@@ -12,6 +13,8 @@ import {MatSnackBar} from '@angular/material';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
+  githubId = environment.githubId;
+  githubURL = `https://github.com/login/oauth/authorize?scope=user:email&client_id${this.githubId}"`;
 
   constructor(private activeRoute: ActivatedRoute,
               private snackBar: MatSnackBar,

@@ -1,3 +1,6 @@
+
+import {throwError as observableThrowError, Observable} from 'rxjs';
+import {tap, catchError} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
 import {
   HttpRequest,
@@ -11,10 +14,7 @@ import {Store} from '@ngrx/store';
 import {AuthService} from './auth.service';
 import * as fromRoot from '../reducers';
 import * as userActions from '../../core/user/user.actions';
-import {Observable} from 'rxjs/Observable';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/throw';
+
 import {isOurAPICall} from '../../shared/functions/api';
 
 @Injectable()
@@ -27,22 +27,19 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next
       .handle(request)
-      .do((event: HttpEvent<any>) => {
+      .pipe(tap((event: HttpEvent<any>) => {
         if (event instanceof HttpResponse) {
           // Do nothing for now
         }
-      })
-      .catch(response => {
+      }))
+      .pipe(catchError(response => {
         if (response instanceof HttpErrorResponse) {
           if (response.status === 403 && isOurAPICall(request.url)) {
             this.authService.invalidateUser();
           }
         }
 
-        return Observable.throw(response);
-      });
+        return observableThrowError(response);
+      }));
   }
 }
-
-
-

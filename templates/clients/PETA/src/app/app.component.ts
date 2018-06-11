@@ -1,8 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {Observable} from 'rxjs/Observable';
-import {switchMap, take} from 'rxjs/operators';
-import 'rxjs/add/operator/do';
-import 'rxjs/add/observable/timer';
+import {switchMap, take, tap} from 'rxjs/operators';
+import {timer} from 'rxjs';
+
 import {TimeoutService} from './core/timeout/timeout.service';
 import {AuthService} from './core/auth/auth.service';
 import {MatDialog, MatDialogRef} from '@angular/material';
@@ -44,10 +43,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.timeoutService.time
-      .pipe(switchMap(() => Observable.timer(this.authService.remember ?
+      .pipe(switchMap(() => timer(this.authService.remember ?
         this.timeoutService.rememberMaxAge - this.tenMinutes:
         this.timeoutService.maxAge - this.tenMinutes)))
-      .do(() => {
+      .pipe(tap(() => {
         if (this.timeoutService.active) {
           this.dialogRef = this.dialog.open(StayLoggedInDialogComponent);
           this.dialogRef.afterClosed().subscribe(result => {
@@ -58,20 +57,20 @@ export class AppComponent implements OnInit {
             }
           });
         }
-      })
+      }))
       .subscribe();
 
     this.timeoutService.time
-      .pipe(switchMap(() => Observable.timer(this.authService.remember ? this.timeoutService.rememberMaxAge :
+      .pipe(switchMap(() => timer(this.authService.remember ? this.timeoutService.rememberMaxAge :
         this.timeoutService.maxAge)))
-      .do(() => {
+      .pipe(tap(() => {
         if (this.timeoutService.active) {
           this.authService.invalidateUser();
           if (this.dialogRef) {
             this.dialogRef.close();
           }
         }
-      })
+      }))
       .subscribe();
   }
 }
