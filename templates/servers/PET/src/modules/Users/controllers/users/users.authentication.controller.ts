@@ -107,6 +107,7 @@ export function oauthCallback(req: Request, res: Response, next: NextFunction) {
 
   passport.authenticate(strategy, function (err, user, info) {
     if (err) {
+      console.log(err);
       return res.status(500).send({message: 'There was an error authenticating'});
     }
     if (!user) {

@@ -29,7 +29,7 @@ export default function (app) {
   });
 
   // Initialize strategies
-  config.utils.getGlobbedPaths(join(__dirname, './strategies/**/local.js')).forEach(function (strategy) {
+  config.utils.getGlobbedPaths(join(__dirname, './strategies/**/*.js')).forEach(function (strategy) {
     require(resolvePath(strategy)).default(config);
   });
 
