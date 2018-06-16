@@ -32,7 +32,7 @@ export default function (config) {
       providerData: {
         accessToken,
         refreshToken,
-        ...profile
+        ...(<any>profile)._json
       }
     };
 

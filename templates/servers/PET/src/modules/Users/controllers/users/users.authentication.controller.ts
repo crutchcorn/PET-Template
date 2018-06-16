@@ -2,10 +2,11 @@
 import {NextFunction, Request, Response} from 'express';
 import * as path from 'path';
 import * as passport from 'passport';
-import {getManager} from 'typeorm';
+import {Brackets, createQueryBuilder, getManager} from 'typeorm';
 import {User, findUniqueUsername} from '../../models/user.model';
 import {Role} from '../../models/role.model';
 import {configReturn} from '../../../../config/config';
+
 const config: configReturn = require(path.resolve('./src/config/config'));
 import * as validator from 'validator';
 // errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
@@ -33,7 +34,8 @@ export async function signup(req: Request, res: Response) {
     req.body as User,
     {provider: 'local'},
     {roles: [role]},
-    {displayName: `${req.body.firstName} ${req.body.lastName}`
+    {
+      displayName: `${req.body.firstName} ${req.body.lastName}`
     }));
 
   // Then save the user
@@ -51,7 +53,7 @@ export async function signup(req: Request, res: Response) {
     });
   } catch (err) {
     // TODO: Catch errors with non-nullable
-    res.status(500).send({message: "There was a problem signing up that user", err: err});
+    res.status(500).send({message: 'There was a problem signing up that user', err: err});
   }
 
 }
@@ -148,16 +150,16 @@ export function me(req: Request, res: Response) {
  */
 // TODO: Re-enable this feature
 export async function saveOAuthUserProfile(providerUserProfile: {
-    firstName: string,
-    lastName: string,
-    displayName: string,
-    email: string,
-    username: string,
-    profileImageURL: string,
-    provider: string,
-    providerIdentifierField: string,
-    providerData: any
-  }, done: Function, req?: Request) {
+  firstName: string,
+  lastName: string,
+  displayName: string,
+  email: string,
+  username: string,
+  profileImageURL: string,
+  provider: string,
+  providerIdentifierField: string,
+  providerData: any
+}, done: Function, req?: Request) {
   // Setup info and user objects
   let info: any = {};
   let user: any;
@@ -169,22 +171,33 @@ export async function saveOAuthUserProfile(providerUserProfile: {
     info.redirect_to = req.session.redirect_to;
   }
 
-  // Define a search query fields
-  // This is only for PostgreSQL - TODO: Add for MySQL/etc
-  const searchAdditionalProviderIdentifierField = providerUserProfile.provider + '->>' + providerUserProfile.providerIdentifierField;
-
-  // Define main provider search query and additional provider search query
-  // This is only for PostgreSQL - TODO: Add for MySQL/etc
-  const searchSQL = `SELECT * FROM "user" AS provData WHERE
-  (provData."providerData" ->> '${providerUserProfile.providerIdentifierField}' = '${providerUserProfile.providerData[providerUserProfile.providerIdentifierField]}' AND provider = '${providerUserProfile.provider}')
-  OR
-  (provData."additionalProvidersData" -> '${searchAdditionalProviderIdentifierField}' = '${providerUserProfile.providerData[providerUserProfile.providerIdentifierField]}')`;
-
   // Find existing user with this provider account
   try {
-    const existingUser: User = await userRepository.query(searchSQL);
+    // Define main provider search query and additional provider search query
+    // This is only for PostgreSQL - TODO: Add for MySQL/etc
+    const existingUser = await
+      userRepository
+        .createQueryBuilder('user')
+        .where(
+          new Brackets(qb => {
+            qb.where('user.providerData ->> :provField = :provData', {
+              provField: providerUserProfile.providerIdentifierField,
+              provData: providerUserProfile.providerData[providerUserProfile.providerIdentifierField]
+            })
+              .andWhere('provider = :provider', {
+                provider: providerUserProfile.provider
+              });
+          })
+        )
+        .orWhere('user.additionalProvidersData ->:provider ->> :provIdentField = :provDataField', {
+          provider: providerUserProfile.provider,
+          provIdentField: providerUserProfile.providerIdentifierField,
+          provDataField: providerUserProfile.providerData[providerUserProfile.providerIdentifierField]
+        })
+        .getOne();
 
     if (!req || !req.user) {
+      // TypeORM query returns an array
       if (!existingUser) {
         const possibleUsername = providerUserProfile.username || ((providerUserProfile.email) ? providerUserProfile.email.split('@')[0] : '');
 
@@ -261,7 +274,7 @@ export async function removeOAuthProvider(req, res, next) {
           return {
             ...prev,
             ...(key !== provider ? {[key]: user.additionalProvidersData[key]} : {})
-          }
+          };
         }, {});
     }
     await userRepository.save(user);
