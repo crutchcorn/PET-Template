@@ -148,7 +148,6 @@ export function me(req: Request, res: Response) {
 /**
  * Helper function to save or update a OAuth user profile
  */
-// TODO: Re-enable this feature
 export async function saveOAuthUserProfile(providerUserProfile: {
   firstName: string,
   lastName: string,
@@ -163,13 +162,6 @@ export async function saveOAuthUserProfile(providerUserProfile: {
   // Setup info and user objects
   let info: any = {};
   let user: any;
-
-  // Set redirection path on session.
-  // Do not redirect to a signin or signup page
-  // TODO: This is a no-no - don't redirect when things don't work
-  if (req && noReturnUrls.indexOf(req.session.redirect_to) === -1) {
-    info.redirect_to = req.session.redirect_to;
-  }
 
   // Find existing user with this provider account
   try {
@@ -196,6 +188,7 @@ export async function saveOAuthUserProfile(providerUserProfile: {
         })
         .getOne();
 
+    // Req is not defined because we're not passing req via the GH callback
     if (!req || !req.user) {
       // TypeORM query returns an array
       if (!existingUser) {
@@ -220,8 +213,8 @@ export async function saveOAuthUserProfile(providerUserProfile: {
         await userRepository.save(user);
         return done(null, user, info);
       } else {
-        // User is not logged in but their data is being attempted to be modified?
-        return done(new Error('User is not authorized to do this'), existingUser, info);
+        // User is attempting to login through the provider
+        return done(null, existingUser, info);
       }
     } else {
       // User is already logged in, join the provider data to the existing user
