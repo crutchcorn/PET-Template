@@ -31,7 +31,9 @@ export function invokeRolesPolicies() {
  * Check If Admin Policy Allows
  */
 export function isAllowed(req: Request, res: Response, next: NextFunction) {
-  const roles = (req.user) ? (<User>req.user).roles.map(role => role.name) : ['guest'];
+  // TODO: Remove the `length == 0` check as there should be defaults for role in the future
+  const roles: string[] = req.user && (<User>req.user).roles && (<User>req.user).roles.length !== 0 ?
+    (<User>req.user).roles.map(role => role.name) : ['guest'];
 
   // Check for user roles
   acl.areAnyRolesAllowed(roles, req.route.path, req.method.toLowerCase(), function (err, isAllowed) {

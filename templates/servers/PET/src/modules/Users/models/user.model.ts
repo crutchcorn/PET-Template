@@ -8,8 +8,8 @@ import {resolve} from 'path';
 
 const config: configReturn = require(resolve('./src/config/config'));
 import {generate} from 'generate-password';
-import {Validator} from 'class-validator';
-import {config as owaspConfig, test} from 'owasp-password-strength-test';
+import {ValidateIf, ValidationArguments, Validator} from 'class-validator';
+import {config as owaspConfig, test as testPass} from 'owasp-password-strength-test';
 import {Post} from '../../Posts/models/post.model';
 import {configReturn} from '../../../config/config';
 
@@ -49,6 +49,21 @@ const validateUsername = function (username) {
   );
 };
 
+const getPassErrors = (pass: string): string => {
+  if (this.provider === 'local' && pass) {
+    const result = testPass(pass);
+    if (result.errors.length) {
+      return result.errors.join(' ');
+    } else {
+      return '';
+    }
+  }
+};
+
+const validatePass = (pass: string): boolean => {
+  return !!getPassErrors(pass);
+};
+
 
 @Entity()
 export class User {
@@ -56,29 +71,32 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // TODO: Add validation with validateLocalStrategyProperty
   @Column()
+  @ValidateIf(validateLocalStrategyProperty)
   firstName: string;
 
-  // TODO: Add validation with validateLocalStrategyProperty
   @Column()
+  @ValidateIf(validateLocalStrategyProperty.bind(this))
   lastName: string;
 
   @Column()
   displayName: string;
 
-  // TODO: Add validation with validateLocalStrategyEmail
   @Column()
+  @ValidateIf(validateLocalStrategyEmail.bind(this))
   email: string;
 
   // TODO: Add lowercase unique checks. See @typeorm/typeorm/#327 and @typeorm/typeorm/#356
-  // TODO: Add validation with validateUsername
   // TODO: trim
-  // TODO: required
   @Column({unique: true})
+  @ValidateIf(validateUsername.bind(this))
   username: string;
 
-  @Column({select: false})
+  @Column({select: false, nullable: true})
+
+  @ValidateIf(validatePass, {
+    message: (args: ValidationArguments) => getPassErrors(args.value)
+  })
   password: string;
 
   @Column({select: false, nullable: true})
@@ -114,7 +132,6 @@ export class User {
   @Column({nullable: true})
   resetPasswordToken: string;
 
-  // TODO: Ensure this works with the Date type
   @Column({nullable: true})
   resetPasswordExpires: Date;
 
@@ -238,7 +255,7 @@ export function generateRandomPassphrase(): Promise<string> {
     }
 
     // Send the rejection back if the passphrase fails to pass the strength test
-    if (test(password).errors.length) {
+    if (testPass(password).errors.length) {
       reject(new Error('An unexpected problem occured while generating the random passphrase'));
     } else {
       // resolve with the validated passphrase

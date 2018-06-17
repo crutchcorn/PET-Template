@@ -10,8 +10,9 @@ export default function (config) {
   passportUse(new GithubStrategy({
     clientID: config.github.clientID,
     clientSecret: config.github.clientSecret,
-    callbackURL: config.github.callbackURL
-  },
+    callbackURL: config.github.callbackURL,
+    scope: ['user:email']
+    },
   function (accessToken, refreshToken, profile, done) {
     // Create the user OAuth profile
     const displayName = profile.displayName ? profile.displayName.trim() : profile.username.trim();

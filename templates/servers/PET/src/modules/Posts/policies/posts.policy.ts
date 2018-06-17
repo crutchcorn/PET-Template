@@ -44,7 +44,9 @@ export function invokeRolesPolicies() {
  * Check If System logs Policy Allows
  */
 export function isAllowed(req: PostRequest, res: Response, next: NextFunction) {
-  const roles: string[] = (req.user) ? (<User>req.user).roles.map(role => role.name) : ['guest'];
+  // TODO: Remove the `length == 0` check as there should be defaults for role in the future
+  const roles: string[] = req.user && (<User>req.user).roles && (<User>req.user).roles.length !== 0 ?
+    (<User>req.user).roles.map(role => role.name) : ['guest'];
   const isAdmin: boolean = roles.includes('admin');
   const ownsPost: boolean = !req.post || (req.post && req.user && req.post.user && req.post.user.id === req.user.id);
   const restrictedMethods: string[] = ['post', 'put', 'delete'];
