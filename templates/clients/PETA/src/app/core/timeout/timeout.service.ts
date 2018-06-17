@@ -10,6 +10,7 @@ export class TimeoutService {
   active = false;
 
   time = new Subject();
+  disabled = new Subject();
 
   constructor() { }
 
@@ -23,5 +24,6 @@ export class TimeoutService {
 
   disable() {
     this.active = false;
+    this.disabled.next();
   }
 }

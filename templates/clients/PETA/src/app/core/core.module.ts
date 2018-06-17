@@ -10,12 +10,13 @@ import {AuthGuard} from './auth/auth.guard';
 import {AuthService} from './auth/auth.service';
 import {PostService} from './post/post.service';
 import {TimeoutService} from './timeout/timeout.service';
+import {UserService} from './user/user.service';
+import {TitleBlinkerService} from './titleblinker/title-blinker.service';
 
 /* Interceptors */
 import {HTTP_INTERCEPTORS} from '@angular/common/http';
 import {AuthInterceptor} from './auth/auth.interceptor';
 import {TimeoutInterceptor} from './timeout/timeout.interceptor';
-import {UserService} from './user/user.service';
 
 @NgModule({
   imports: [
@@ -29,6 +30,7 @@ import {UserService} from './user/user.service';
     AuthGuard,
     TimeoutService,
     UserService,
+    TitleBlinkerService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
