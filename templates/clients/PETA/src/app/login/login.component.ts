@@ -3,6 +3,7 @@ import {AuthService} from '../core/auth/auth.service';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {UserService} from '../core/user/user.service';
 
 @Component({
   selector: '{{dashCase name}}-login',
@@ -20,6 +21,7 @@ export class LoginComponent implements OnInit {
   constructor(private activeRoute: ActivatedRoute,
               private snackBar: MatSnackBar,
               private authService: AuthService,
+              private userService: UserService,
               private router: Router,
               private fb: FormBuilder) {
   }
@@ -29,6 +31,13 @@ export class LoginComponent implements OnInit {
       if (params['forced']) {
         this.snackBar.open('You\'ve been forcably logged out. ' +
           'Please log back in to be redirected back to where you were', 'Confirm');
+      // TODO: This will (not?) redirect back to path if use redirect logic - this should be changed on client and serv
+      } else if (params['auth']) {
+        this.userService.fetchUser()
+          .subscribe(user => {
+            this.authService.authAccept(user);
+            this.router.navigate(this.defaultRoute);
+          })
       }
     });
   }

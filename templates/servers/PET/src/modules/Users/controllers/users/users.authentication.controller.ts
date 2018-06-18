@@ -106,19 +106,20 @@ export function oauthCall(req: Request, res: Response, next: NextFunction) {
 export function oauthCallback(req: Request, res: Response, next: NextFunction) {
   const strategy = req.params.strategy;
 
+  // TODO: Look into how this works with native and redo if needed - likely will need to
   passport.authenticate(strategy, function (err, user, info) {
     if (err) {
-      return res.redirect('/authentication/signin?err=' + encodeURIComponent(err));
+      return res.redirect('/login?err=' + encodeURIComponent(err));
     }
     if (!user) {
-      return res.redirect('/authentication/signin');
+      return res.redirect('/login');
     }
     req.login(user, function (err) {
       if (err) {
-        return res.redirect('/authentication/signin');
+        return res.redirect('/login');
       }
 
-      return res.redirect(info.redirect_to || '/');
+      return res.redirect('/login?auth=true');
     });
   })(req, res, next);
 }
@@ -160,11 +161,6 @@ export async function saveOAuthUserProfile(providerUserProfile: {
   // Setup info and user objects
   let info: any = {};
   let user: any;
-
-  // TODO: Look into how this works with native and redo if needed - likely will need to
-  if (noReturnUrls.indexOf(req.session.redirect_to) === -1) {
-    info.redirect_to = req.session.redirect_to;
-  }
 
   // Find existing user with this provider account
   try {
