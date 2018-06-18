@@ -4,15 +4,7 @@ import {Routes, RouterModule} from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    loadChildren: './home/home.module#HomeModule'
-  },
-  {
-    path: 'login',
-    loadChildren: './login/login.module#LoginModule'
-  },
-  {
-    path: 'posts',
-    loadChildren: './posts/posts.module#PostsModule'
+    loadChildren: './nav-shell/nav-shell.module#NavShellModule'
   }
 ];
 

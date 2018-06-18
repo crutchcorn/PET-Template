@@ -13,7 +13,10 @@ const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        component: PostsListComponent
+        component: PostsListComponent,
+        data: {
+          title: 'Post List'
+        }
       }
     ]
   }

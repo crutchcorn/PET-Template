@@ -1,10 +1,10 @@
-import {HomeModule} from './home.module';
+import {NavShellModule} from './nav-shell.module';
 
 describe('HomeModule', () => {
-  let homeModule: HomeModule;
+  let homeModule: NavShellModule;
 
   beforeEach(() => {
-    homeModule = new HomeModule();
+    homeModule = new NavShellModule();
   });
 
   it('should create an instance', () => {

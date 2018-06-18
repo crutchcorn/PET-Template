@@ -2,8 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 
 import {Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
-
+import {tap} from 'rxjs/operators';
 
 import {User, UserWithoutRole} from '../user/user';
 import {TimeoutService} from '../timeout/timeout.service';
@@ -44,13 +43,21 @@ export class AuthService {
   login(usernameOrEmail: string, password: string, remember = false): Observable<User> {
     return this.http
       .post<User>('/api/auth/signin', {usernameOrEmail: usernameOrEmail, password: password, remember: remember})
-      .pipe(map((user: User) => {
+      .pipe(tap((user: User) => {
         if (remember) {
           this.remember = true;
         }
         this.timeoutService.setTime();
         this.authAccept(user);
-        return user;
+      }));
+  }
+
+  loginGithub(): Observable<User> {
+    return this.http
+      .get<User>('/api/auth/github')
+      .pipe(tap((user: User) => {
+        this.timeoutService.setTime();
+        this.authAccept(user);
       }));
   }
 
@@ -62,14 +69,13 @@ export class AuthService {
     document.cookie = cookie.serialize('sessionId', token || '', {path: '/'});
   }
 
-  logout(): Observable<{ message: string }> {
-    return this.http
+  logout(): void {
+    this.http
       .get<{ message: string }>('/api/auth/signout')
-      .pipe(map((message: { message: string }) => {
+      .subscribe(() => {
         this.router.navigate(['/']);
         this.nullifyAuth();
-        return message;
-      }));
+      });
   }
 
   /**

@@ -1,6 +1,6 @@
 # {{titleCase name}}
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.6.6.
+This project was generated with [generate-me](https://github.com/crutchcorn/generate-me) and utilizes [Angular CLI](https://github.com/angular/angular-cli).
 
 ## Getting started
 

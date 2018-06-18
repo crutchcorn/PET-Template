@@ -8,8 +8,7 @@ import {Role} from '../../models/role.model';
 import {configReturn} from '../../../../config/config';
 
 const config: configReturn = require(path.resolve('./src/config/config'));
-import * as validator from 'validator';
-// errorHandler = require(path.resolve('./modules/core/server/controllers/errors.server.controller')),
+import {escape} from 'validator';
 
 // URLs for which user can't be redirected on signin
 const noReturnUrls = [
@@ -109,18 +108,17 @@ export function oauthCallback(req: Request, res: Response, next: NextFunction) {
 
   passport.authenticate(strategy, function (err, user, info) {
     if (err) {
-      console.log(err);
-      return res.status(500).send({message: 'There was an error authenticating'});
+      return res.redirect('/authentication/signin?err=' + encodeURIComponent(err));
     }
     if (!user) {
-      return res.status(404).send({message: 'There is no user with the matching info'});
+      return res.redirect('/authentication/signin');
     }
     req.login(user, function (err) {
       if (err) {
-        return res.status(500).send({message: 'There was an error logging in'});
+        return res.redirect('/authentication/signin');
       }
 
-      return res.send({message: 'User has been logged in'});
+      return res.redirect(info.redirect_to || '/');
     });
   })(req, res, next);
 }
@@ -129,15 +127,15 @@ export function me(req: Request, res: Response) {
   let safeUserObject = null;
   if (req.user) {
     safeUserObject = {
-      displayName: validator.escape(req.user.displayName),
-      provider: validator.escape(req.user.provider),
-      username: validator.escape(req.user.username),
+      displayName: escape(req.user.displayName),
+      provider: escape(req.user.provider),
+      username: escape(req.user.username),
       created: req.user.created.toString(),
       roles: req.user.roles,
       profileImageURL: req.user.profileImageURL,
-      email: validator.escape(req.user.email),
-      lastName: validator.escape(req.user.lastName),
-      firstName: validator.escape(req.user.firstName),
+      email: escape(req.user.email),
+      lastName: escape(req.user.lastName),
+      firstName: escape(req.user.firstName),
       additionalProvidersData: req.user.additionalProvidersData
     };
   }
@@ -162,6 +160,11 @@ export async function saveOAuthUserProfile(providerUserProfile: {
   // Setup info and user objects
   let info: any = {};
   let user: any;
+
+  // TODO: Look into how this works with native and redo if needed - likely will need to
+  if (noReturnUrls.indexOf(req.session.redirect_to) === -1) {
+    info.redirect_to = req.session.redirect_to;
+  }
 
   // Find existing user with this provider account
   try {

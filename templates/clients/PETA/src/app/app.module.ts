@@ -3,7 +3,7 @@ import {BrowserModule} from '@angular/platform-browser';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {HttpClientModule} from '@angular/common/http';
 
-import {MatDialogModule, MatButtonModule} from '@angular/material';
+import {MatDialogModule, MatButtonModule, MatToolbarModule, MatSidenavModule, MatIconModule, MatListModule} from '@angular/material';
 import {A11yModule} from '@angular/cdk/a11y';
 
 import {CoreModule} from './core/core.module';
@@ -12,11 +12,12 @@ import {ServiceWorkerModule} from '@angular/service-worker';
 import {environment} from '../environments/environment';
 
 import {AppComponent, StayLoggedInDialogComponent} from './app.component';
+import { LayoutModule } from '@angular/cdk/layout';
 
 @NgModule({
   declarations: [
     AppComponent,
-    StayLoggedInDialogComponent
+    StayLoggedInDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -27,7 +28,12 @@ import {AppComponent, StayLoggedInDialogComponent} from './app.component';
     MatDialogModule,
     A11yModule,
     MatButtonModule,
-    environment.production ? ServiceWorkerModule.register('/ngsw-worker.js') : []
+    environment.production ? ServiceWorkerModule.register('/ngsw-worker.js') : [],
+    LayoutModule,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatListModule
   ],
   providers: [],
   bootstrap: [AppComponent],

@@ -7,7 +7,7 @@
     displayName?: string;
     email: string;
     username: string;
-    password?: string; // This is ONLY for sign-up purposes, this does not actually get saved to
+    password?: string;
     profileImageURL?: string;
     provider?: string;
     updated?: Date;
