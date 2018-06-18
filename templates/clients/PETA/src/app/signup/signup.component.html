@@ -1,0 +1,49 @@
+<form [formGroup]="form" (ngSubmit)="signup()">
+  <div fxLayout="column" fxLayoutAlign="center center" class="full-height">
+    <!--<h3>{{titleCase name}} Login</h3>-->
+    <mat-form-field>
+      <input matInput placeholder="First Name" formControlName="firstName"/>
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput placeholder="Last Name" formControlName="lastName"/>
+    </mat-form-field>
+    <!--This shows the same error if email or required-->
+    <mat-form-field #email [color]="submitted && !email.valid ? 'warn' : 'primary'">
+      <input matInput placeholder="Email" formControlName="email" required/>
+      <mat-error *ngIf="form.get('email').invalid && submitted && !form?.controls?.email.errors?.email">Email is required</mat-error>
+      <mat-error *ngIf="form?.controls?.email.errors?.email">This is not a valid email address</mat-error>
+    </mat-form-field>
+    <mat-form-field #username [color]="submitted && !username.valid ? 'warn' : 'primary'">
+      <input matInput placeholder="Username" formControlName="username" required/>
+      <mat-error *ngIf="form.get('username').invalid && submitted">Username is required</mat-error>
+    </mat-form-field>
+    <!--TODO: Clean up this mess!-->
+    <mat-form-field #password
+                    [color]="(submitted && !password.valid) ||
+                    (form?.controls?.confirmPassword.errors?.MatchPassword && (!form.get('password').pristine ||
+                    !form.get('confirmpassword').pristine)) ? 'warn' : 'primary'">
+      <input matInput placeholder="Password" [attr.type]="showPass ? 'text' : 'password'" formControlName="password" required/>
+      <mat-error *ngIf="form.get('password').invalid && !form.get('password').value && submitted">Password is required</mat-error>
+      <button mat-button matSuffix mat-icon-button [attr.aria-label]="showPass ? 'Hide Password' : 'Show Password'"
+              (click)="showPass = !showPass">
+        <mat-icon>\{{showPass ? 'close' : 'remove_red_eye'}}</mat-icon>
+      </button>
+    </mat-form-field>
+    <mat-form-field #confirmpassword
+                    [color]="(submitted && !confirmpassword.valid) ||
+                    (form?.controls?.confirmPassword.errors?.MatchPassword && (!form.get('password').pristine ||
+                    !form.get('confirmpassword').pristine)) ? 'warn' : 'primary'">
+      <input matInput placeholder="Confirm Password" [attr.type]="showPass ? 'text' : 'password'" formControlName="confirmPassword" required/>
+      <mat-error *ngIf="form.get('confirmPassword').invalid && !form.get('confirmPassword').value && submitted">Confirm password field is required</mat-error>
+      <button mat-button matSuffix mat-icon-button [attr.aria-label]="showPass ? 'Hide Password' : 'Show Password'"
+              (click)="showPass = !showPass">
+        <mat-icon>\{{showPass ? 'close' : 'remove_red_eye'}}</mat-icon>
+      </button>
+    </mat-form-field>
+    <div style="color: red" *ngIf="(form?.controls?.confirmPassword.errors?.MatchPassword && (!form.get('password').pristine ||
+                    !form.get('confirmpassword').pristine))">Password not match</div>
+    <div fxLayout="column" fxLayoutAlign="start start">
+      <button mat-raised-button color="primary" routerLink="/signup" type="submit">Signup</button>
+    </div>
+  </div>
+</form>

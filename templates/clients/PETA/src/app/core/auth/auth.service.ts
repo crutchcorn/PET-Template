@@ -8,10 +8,11 @@ import {User, UserWithoutRole} from '../user/user';
 import {TimeoutService} from '../timeout/timeout.service';
 
 import {Store} from '@ngrx/store';
-import * as userActions from '../user/user.actions';
-import * as fromRoot from '../reducers';
 import {Router} from '@angular/router';
 import {Location} from '@angular/common';
+import {State} from '../reducers';
+import {LoadUser, UnloadUser} from '../user/user.actions';
+
 import * as cookie from 'cookie';
 
 
@@ -22,14 +23,16 @@ export class AuthService {
 
   constructor(private http: HttpClient,
               private timeoutService: TimeoutService,
-              private store: Store<fromRoot.State>,
+              private store: Store<State>,
               private router: Router,
               private location: Location) {
   }
 
   signup(newUser: UserWithoutRole): Observable<User> {
     return this.http
-      .post<User>('/api/auth/signup', newUser);
+      .post<User>('/api/auth/signup', newUser)
+      // TODO: Add a snackbar that congratulates them on signing up - starts tutorial in component logic using `seen` or not
+      .pipe(tap());
   }
 
   /**
@@ -84,7 +87,7 @@ export class AuthService {
    */
   authAccept(user: User): void {
     this.timeoutService.enable();
-    this.store.dispatch(new userActions.LoadUser(user));
+    this.store.dispatch(new LoadUser(user));
     if (this.redirectUrl) {
       this.router.navigate([this.redirectUrl]);
       this.redirectUrl = null;
@@ -108,6 +111,6 @@ export class AuthService {
     this.token = null;
     this.remember = false;
     this.timeoutService.disable();
-    this.store.dispatch(new userActions.UnloadUser());
+    this.store.dispatch(new UnloadUser());
   }
 }

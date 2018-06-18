@@ -12,6 +12,7 @@ import {UserService} from '../core/user/user.service';
 })
 export class LoginComponent implements OnInit {
   incorrect = false;
+  showPass = false;
   defaultRoute = ['/posts'];
   form: FormGroup = this.fb.group({
     usernameOrEmail: [null, Validators.required],
@@ -26,6 +27,14 @@ export class LoginComponent implements OnInit {
               private fb: FormBuilder) {
   }
 
+  verifyAuth() {
+    this.userService.fetchUser()
+      .subscribe(user => {
+        this.authService.authAccept(user);
+        this.router.navigate(this.defaultRoute);
+      })
+  }
+
   ngOnInit() {
     this.activeRoute.params.subscribe((params: Params) => {
       if (params['forced']) {
@@ -33,11 +42,7 @@ export class LoginComponent implements OnInit {
           'Please log back in to be redirected back to where you were', 'Confirm');
       // TODO: This will (not?) redirect back to path if use redirect logic - this should be changed on client and serv
       } else if (params['auth']) {
-        this.userService.fetchUser()
-          .subscribe(user => {
-            this.authService.authAccept(user);
-            this.router.navigate(this.defaultRoute);
-          })
+        this.verifyAuth();
       }
     });
   }

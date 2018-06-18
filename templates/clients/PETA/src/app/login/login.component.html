@@ -1,4 +1,4 @@
-<form [formGroup]="form">
+<form [formGroup]="form" (ngSubmit)="login()">
   <div fxLayout="column" fxLayoutAlign="center center" class="full-height">
     <!--<h3>{{titleCase name}} Login</h3>-->
     <p *ngIf="incorrect">The username or password you submitted was incorrect, please try again or reset your
@@ -7,10 +7,15 @@
       <input matInput placeholder="Username" formControlName="usernameOrEmail"/>
     </mat-form-field>
     <mat-form-field [color]="incorrect ? 'warn' : 'primary'">
-      <input matInput placeholder="Password" type="password" formControlName="password"/>
+      <input matInput placeholder="Password" [attr.type]="showPass ? 'text' : 'password'" formControlName="password"/>
+      <button mat-button matSuffix mat-icon-button [attr.aria-label]="showPass ? 'Hide Password' : 'Show Password'"
+              (click)="showPass = !showPass">
+        <mat-icon>\{{showPass ? 'close' : 'remove_red_eye'}}</mat-icon>
+      </button>
     </mat-form-field>
     <div fxLayout="column" fxLayoutAlign="start start">
       <button mat-raised-button color="primary" [disabled]="!form.valid" type="submit">Login</button>
+      <button mat-raised-button color="accent" routerLink="/signup" type="button">Signup</button>
       <!--GH Grey-->
       <a href="/api/auth/github"><button mat-raised-button type="button">Login with GitHub</button></a>
     </div>

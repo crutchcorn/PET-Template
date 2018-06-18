@@ -3,6 +3,7 @@ import {Routes, RouterModule} from '@angular/router';
 import {DashboardComponent} from '../dashboard/dashboard.component';
 import {NavShellComponent} from './nav-shell.component';
 import {LoginComponent} from '../login/login.component';
+import {SignupComponent} from '../signup/signup.component';
 
 const routes: Routes = [
   {
@@ -25,6 +26,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'signup',
+        component: SignupComponent,
+        data: {
+          title: 'Signup'
+        }
+      },
+      {
         path: 'posts',
         loadChildren: '../posts/posts.module#PostsModule'
       }
@@ -35,7 +43,8 @@ const routes: Routes = [
 export const navShellRoutedComponents = [
   NavShellComponent,
   DashboardComponent,
-  LoginComponent
+  LoginComponent,
+  SignupComponent
 ];
 
 @NgModule({

@@ -1,7 +1,6 @@
   import {Role} from '../role/role';
 
   export class UserWithoutRole {
-    id: number;
     firstName?: string;
     lastName?: string;
     displayName?: string;
@@ -17,7 +16,6 @@
 
     // TODO: There has to be a better way of doing this
     constructor(user: User) {
-        this.id = user.id;
         this.firstName = user.firstName;
         this.lastName = user.lastName;
         this.displayName = user.displayName;
