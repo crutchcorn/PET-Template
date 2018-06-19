@@ -21,14 +21,14 @@ import { storeFreeze } from 'ngrx-store-freeze';
  * notation packages up all of the exports into a single object.
  */
 
-import * as fromUser from '../user/user.reducer';
+import {State as userState, getUser as getUserFromUser, reducer as userReducer} from '../user/user.reducer';
 
 /**
  * As mentioned, we treat each reducer like a table in a database. This means
  * our top level state interface is just a map of keys to inner state types.
  */
 export interface State {
-  user: fromUser.State;
+  user: userState;
 }
 
 /**
@@ -37,7 +37,7 @@ export interface State {
  * and the current or initial state and return a new immutable state.
  */
 export const reducers: ActionReducerMap<State> = {
-  user: fromUser.reducer
+  user: userReducer
 };
 
 // console.log all actions
@@ -62,9 +62,9 @@ export const metaReducers: MetaReducer<State>[] = !environment.production
 /**
  * Layout Reducers
  */
-export const getUserState = createFeatureSelector<fromUser.State>('user');
+export const getUserState = createFeatureSelector<userState>('user');
 
 export const getUser = createSelector(
   getUserState,
-  fromUser.getUser
+  getUserFromUser
 );

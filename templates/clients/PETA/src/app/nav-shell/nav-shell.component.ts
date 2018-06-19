@@ -1,8 +1,8 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {merge, Observable, Subject} from 'rxjs';
-import {distinctUntilChanged, filter, map} from 'rxjs/operators';
-import {ActivatedRoute, NavigationEnd, Router} from '@angular/router';
+import {distinctUntilChanged, filter, map, mergeMap, share, take} from 'rxjs/operators';
+import {ActivatedRoute, ChildActivationEnd, NavigationEnd, Router} from '@angular/router';
 import {Store} from '@ngrx/store';
 import {getUser, State} from '../core/reducers';
 import {AuthService} from '../core/auth/auth.service';
@@ -12,21 +12,27 @@ import {AuthService} from '../core/auth/auth.service';
   templateUrl: './nav-shell.component.html',
   styleUrls: ['./nav-shell.component.scss']
 })
-export class NavShellComponent implements OnInit {
-
+export class NavShellComponent {
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches)
-    );
+    )
+    .pipe(share());
 
-  private routerSubject = new Subject<boolean>();
+  title$ = this.router.events
+    .pipe(filter(e => e instanceof NavigationEnd))
+    .pipe(map(() => {
+      let route = this.activatedRoute;
 
-  getRouteData$ = merge(this.routerSubject, this.router.events)
-    .pipe(filter(event => event instanceof NavigationEnd || event === true))
-    .pipe(distinctUntilChanged())
-    .pipe(map(() =>
-      (this.activatedRoute.routeConfig.data && this.activatedRoute.routeConfig.data.title) || '{{titleCase name}}')
-    );
+      while (route.firstChild) {
+        route = route.firstChild;
+      }
+
+      return route;
+    }))
+    .pipe(filter((route) => route.outlet === 'primary'))
+    .pipe(mergeMap((route) => route.data))
+    .pipe(map(data => data['title'] || '{{titleCase name}}'));
 
   getUserName$ = this.store.select(getUser)
     .pipe(map(user => (user && user.displayName) || null));
@@ -36,11 +42,6 @@ export class NavShellComponent implements OnInit {
               private activatedRoute: ActivatedRoute,
               private store: Store<State>,
               private authService: AuthService) {
-  }
-
-  ngOnInit() {
-    this.routerSubject.next(true);
-    this.getRouteData$.subscribe(res => console.log(res));
   }
 
   logout() {

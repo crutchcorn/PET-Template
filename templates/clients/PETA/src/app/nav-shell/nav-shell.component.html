@@ -26,17 +26,16 @@
       <!--TODO: Add prof picture in corner to login-->
       <!--TODO: Add user detail/edit (inline) page-->
       <!--TODO: Add page title using router info-->
-      <span>\{{getRouteData$ | async}}</span>
+      <span>\{{title$ | async}}</span>
 
-      <div fxFlexFill></div>
+      <!--<div fxFlexFill></div>-->
 
       <ng-template #login>
         <button mat-button routerLink="/login">Login</button>
       </ng-template>
 
-      <ng-container *ngIf="getUserName$ | async; then login">
-        <button mat-button [matMenuTriggerFor]="menu" *ngIf="isHandset$ | async; else userButton">\{{getUserName$ |
-          async}}
+      <ng-container *ngIf="getUserName$ | async as userName; else login">
+        <button mat-button [matMenuTriggerFor]="menu" *ngIf="isHandset$ | async; else userButton">\{{userName}}
         </button>
         <ng-template #userButton>
           <button mat-icon-button [matMenuTriggerFor]="menu">
