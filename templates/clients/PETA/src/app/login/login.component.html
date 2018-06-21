@@ -1,23 +1,50 @@
-<form [formGroup]="form" (ngSubmit)="login()">
-  <div fxLayout="column" fxLayoutAlign="center center" class="full-height">
-    <!--<h3>{{titleCase name}} Login</h3>-->
-    <p *ngIf="incorrect">The username or password you submitted was incorrect, please try again or reset your
-      password</p>
-    <mat-form-field [color]="incorrect ? 'warn' : 'primary'">
-      <input matInput placeholder="Username" formControlName="usernameOrEmail"/>
-    </mat-form-field>
-    <mat-form-field [color]="incorrect ? 'warn' : 'primary'">
-      <input matInput placeholder="Password" [attr.type]="showPass ? 'text' : 'password'" formControlName="password"/>
-      <button mat-button matSuffix mat-icon-button [attr.aria-label]="showPass ? 'Hide Password' : 'Show Password'"
-              (click)="showPass = !showPass">
-        <mat-icon>\{{showPass ? 'close' : 'remove_red_eye'}}</mat-icon>
-      </button>
-    </mat-form-field>
-    <div fxLayout="column" fxLayoutAlign="start start">
-      <button mat-raised-button color="primary" [disabled]="!form.valid" type="submit">Login</button>
-      <button mat-raised-button color="accent" routerLink="/signup" type="button">Signup</button>
-      <!--GH Grey-->
-      <a href="/api/auth/github"><button mat-raised-button type="button">Login with GitHub</button></a>
+<ngx-slideshow #slideshow [cards]="1" [cardSize]="'100%'" [padding]="'10px'" [resizeViewport]="false" [disableTabbing]="true">
+  <li>
+    <form [formGroup]="form" (ngSubmit)="login()">
+      <div fxLayout="column" fxLayoutAlign="center center" class="full-height">
+        <h3>{{titleCase name}} Login</h3>
+        <p *ngIf="incorrect">The username or password you submitted was incorrect, please try again or reset your
+          password</p>
+        <mat-form-field [color]="incorrect ? 'warn' : 'primary'">
+          <input matInput placeholder="Username" formControlName="usernameOrEmail"/>
+        </mat-form-field>
+        <mat-form-field [color]="incorrect ? 'warn' : 'primary'">
+          <input matInput placeholder="Password" [attr.type]="showPass ? 'text' : 'password'"
+                 formControlName="password"/>
+          <button mat-button matSuffix mat-icon-button [attr.aria-label]="showPass ? 'Hide Password' : 'Show Password'"
+                  (click)="showPass = !showPass">
+            <mat-icon>\{{showPass ? 'close' : 'remove_red_eye'}}</mat-icon>
+          </button>
+        </mat-form-field>
+        <div fxLayout="column" fxLayoutAlign="start start">
+          <button mat-raised-button color="primary" [disabled]="!form.valid" type="submit">Login</button>
+          <button mat-raised-button color="accent" routerLink="/signup" type="button">Signup</button>
+          <button mat-raised-button (click)="slideshow.right()" type="button">Forgot Password</button>
+          <!--GH Grey-->
+          <a href="/api/auth/github">
+            <button mat-raised-button type="button">Login with GitHub</button>
+          </a>
+        </div>
+      </div>
+    </form>
+  </li>
+  <li>
+    <form [formGroup]="resetForm" (ngSubmit)="reset()">
+      <div fxLayout="column" fxLayoutAlign="center center" class="full-height">
+        <h3>Reset Password</h3>
+        <p *ngIf="incorrectReset">We could not find an account with that username or email</p>
+        <mat-form-field [color]="incorrectReset ? 'warn' : 'primary'">
+          <input matInput placeholder="Username or Email" formControlName="usernameOrEmail"/>
+        </mat-form-field>
+        <div fxLayout="column" fxLayoutAlign="start start">
+          <button mat-raised-button color="primary" [disabled]="!form.valid" type="submit">Reset Password</button>
+        </div>
+      </div>
+    </form>
+  </li>
+  <li>
+    <div style="height: 100vh" fxLayout="row" fxLayoutAlign="center center">
+      <button mat-button (click)="goToReset()">Click here to reset password</button>
     </div>
-  </div>
-</form>
+  </li>
+</ngx-slideshow>

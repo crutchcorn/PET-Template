@@ -30,6 +30,7 @@
     "classlist.js": "^1.1.20150312",
     "core-js": "^2.5.7",
     "ngrx-store-freeze": "^0.2.1",
+    "ngx-slideshow": "^0.1.1",
     "rxjs": "^6.2.1",
     "socket.io-client": "^2.1.1",
     "web-animations-js": "^2.3.1",

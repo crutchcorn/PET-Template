@@ -93,7 +93,6 @@ export class User {
   username: string;
 
   @Column({select: false, nullable: true})
-
   @ValidateIf(validatePass, {
     message: (args: ValidationArguments) => getPassErrors(args.value)
   })

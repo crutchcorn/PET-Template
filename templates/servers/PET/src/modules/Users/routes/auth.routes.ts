@@ -4,7 +4,6 @@ import {forgot, validateResetToken, reset} from '../controllers/users/users.pass
 /**
  * Module dependencies
  */
-
 export default function (app) {
   // Setting up the users password api
   app.route('/api/auth/forgot')
@@ -27,5 +26,4 @@ export default function (app) {
   // Setting the oauth routes
   app.route('/api/auth/:strategy').get(oauthCall);
   app.route('/api/auth/:strategy/callback').get(oauthCallback);
-
 };

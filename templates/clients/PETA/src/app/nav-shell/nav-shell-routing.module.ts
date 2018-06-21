@@ -4,6 +4,7 @@ import {DashboardComponent} from '../dashboard/dashboard.component';
 import {NavShellComponent} from './nav-shell.component';
 import {LoginComponent} from '../login/login.component';
 import {SignupComponent} from '../signup/signup.component';
+import {PasswordResetComponent} from '../password-reset/password-reset.component';
 
 const routes: Routes = [
   {
@@ -33,6 +34,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'reset-password/:token',
+        component: PasswordResetComponent,
+        data: {
+          title: 'Reset Password'
+        }
+      },
+      {
         path: 'posts',
         loadChildren: '../posts/posts.module#PostsModule'
       }
@@ -44,7 +52,8 @@ export const navShellRoutedComponents = [
   NavShellComponent,
   DashboardComponent,
   LoginComponent,
-  SignupComponent
+  SignupComponent,
+  PasswordResetComponent
 ];
 
 @NgModule({

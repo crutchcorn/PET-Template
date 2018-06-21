@@ -17,7 +17,7 @@ import { LayoutModule } from '@angular/cdk/layout';
 @NgModule({
   declarations: [
     AppComponent,
-    StayLoggedInDialogComponent,
+    StayLoggedInDialogComponent
   ],
   imports: [
     BrowserModule,

@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
+import {MatSnackBar} from '@angular/material';
 
 import {Observable} from 'rxjs';
 import {tap} from 'rxjs/operators';
@@ -45,7 +46,7 @@ export class AuthService {
    */
   login(usernameOrEmail: string, password: string, remember = false): Observable<User> {
     return this.http
-      .post<User>('/api/auth/signin', {usernameOrEmail: usernameOrEmail, password: password, remember: remember})
+      .post<User>('/api/auth/signin', {usernameOrEmail, password, remember})
       .pipe(tap((user: User) => {
         if (remember) {
           this.remember = true;
@@ -76,7 +77,11 @@ export class AuthService {
     this.http
       .get<{ message: string }>('/api/auth/signout')
       .subscribe(() => {
-        this.router.navigate(['/']);
+        this.router.navigate(['/'], {
+          queryParams: {
+            signout: true
+          }
+        });
         this.nullifyAuth();
       });
   }
@@ -112,5 +117,17 @@ export class AuthService {
     this.remember = false;
     this.timeoutService.disable();
     this.store.dispatch(new UnloadUser());
+  }
+
+  forgotPass(usernameOrEmail: string): Observable<{token: string}> {
+    return this.http.post<{token: string}>('/api/auth/forgot', {usernameOrEmail});
+  }
+
+  validateToken(token: string): Observable<{token: string}> {
+    return this.http.get<{token: string}>(`/api/auth/reset/${token}`);
+  }
+
+  resetPassword(token: string, newPassword: string, verifyPassword: string): Observable<{token: string}> {
+    return this.http.post<{token: string}>(`/api/auth/reset/${token}`, {newPassword, verifyPassword});
   }
 }

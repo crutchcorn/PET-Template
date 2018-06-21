@@ -43,7 +43,7 @@
     <div style="color: red" *ngIf="(form?.controls?.confirmPassword.errors?.MatchPassword && (!form.get('password').pristine ||
                     !form.get('confirmpassword').pristine))">Password not match</div>
     <div fxLayout="column" fxLayoutAlign="start start">
-      <button mat-raised-button color="primary" routerLink="/signup" type="submit">Signup</button>
+      <button mat-raised-button color="primary" type="submit">Signup</button>
     </div>
   </div>
 </form>

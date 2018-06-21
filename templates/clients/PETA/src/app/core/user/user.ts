@@ -1,7 +1,7 @@
   import {Role} from '../role/role';
 
   export class UserWithoutRole {
-    _id?: string;
+    id?: number;
     firstName?: string;
     lastName?: string;
     displayName?: string;
@@ -17,7 +17,7 @@
 
     // TODO: There has to be a better way of doing this
     constructor(user: Partial<User>) {
-        this._id = user._id;
+        this.id = user.id;
         this.firstName = user.firstName;
         this.lastName = user.lastName;
         this.displayName = user.displayName;

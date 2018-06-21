@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import {PostsComponent} from './posts.component';
 import {PostsListComponent} from './posts-list/posts-list.component';
 import {AuthGuard} from '../core/auth/auth.guard';
+import {PostsCreateComponent} from './posts-create/posts-create.component';
 
 const routes: Routes = [
   {

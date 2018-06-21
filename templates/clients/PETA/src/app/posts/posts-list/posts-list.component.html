@@ -1,18 +1,19 @@
 <{{dashCase name}}-posts-create (created)="created($event)"></{{dashCase name}}-posts-create>
+<div fxLayout="column" fxLayoutGap="10px" fxLayoutAlign="center">
 <mat-card *ngFor="let post of posts">
-  <h3 mat-card-title>{{post.title}}</h3>
-  <h3 mat-card-subtitle>{{post.user.displayName}}</h3>
+  <h3 mat-card-title>\{{post.title}}</h3>
+  <h3 mat-card-subtitle>\{{post.user.displayName}}</h3>
   <mat-card-content>
     <ng-template #postText>
-      <p>{{post.text}}</p>
+      <p>\{{post.text}}</p>
     </ng-template>
     <mat-form-field *ngIf="post.editing; else postText">
-      <textarea matInput placeholder="Post Text" #postEdit
+      <textarea matInput placeholder="Post Text" #postEdit [value]="post.text"
                 cdkTextareaAutosize minRows="3" required></textarea>
       <mat-error *ngIf="!postEdit.value">There must be text in post to save</mat-error>
      </mat-form-field>
   </mat-card-content>
-  <mat-card-actions *ngIf="(getUserID$ | async) === post.user._id">
+  <mat-card-actions *ngIf="(getUserID$ | async) === post.user.id">
     <ng-container *ngIf="post.editing; else viewing">
       <button mat-button (click)="cancelEdit(post, postEdit)">CANCEL</button>
       <button mat-button color="primary" [disabled]="!postEdit.value" (click)="savePost(post, postEdit)">SAVE</button>
@@ -23,3 +24,4 @@
     </ng-template>
   </mat-card-actions>
 </mat-card>
+</div>

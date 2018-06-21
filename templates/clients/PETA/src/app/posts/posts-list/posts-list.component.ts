@@ -16,7 +16,7 @@ export class PostsListComponent implements OnInit {
   posts: EditablePost[];
 
   getUserID$ = this.store.select(getUser)
-    .pipe(map((user: User) => (user && user._id) || null))
+    .pipe(map((user: User) => (user && user.id) || null))
     .pipe(share());
 
   constructor(private postService: PostService,
