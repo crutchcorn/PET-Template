@@ -128,6 +128,7 @@ export function me(req: Request, res: Response) {
   let safeUserObject = null;
   if (req.user) {
     safeUserObject = {
+      id: req.user.id,
       displayName: escape(req.user.displayName),
       provider: escape(req.user.provider),
       username: escape(req.user.username),

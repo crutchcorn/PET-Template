@@ -11,7 +11,6 @@ export default function () {
       passwordField: 'password'
     },
     function (usernameOrEmail, password, done) {
-
       userRepository
         .createQueryBuilder('user')
         .where('user.username = :username OR user.email = :email', {

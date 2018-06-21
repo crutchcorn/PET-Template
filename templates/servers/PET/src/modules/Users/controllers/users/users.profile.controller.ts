@@ -1,13 +1,8 @@
 'use strict';
 
 import {Request, Response} from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
 import {User} from '../../models/user.model';
 import {getManager} from 'typeorm';
-const config: configReturn = require(path.resolve('./src/config/config'));
-import {escape} from 'validator';
-import {configReturn} from '../../../../config/config';
 
 /**
  * Module dependencies
@@ -210,29 +205,3 @@ export async function update(req: Request, res: Response) {
 //     });
 //   }
 // };
-
-/**
- * Send User
- */
-exports.me = function (req, res) {
-  // Sanitize the user - short term solution. Copied from core.server.controller.js
-  // TODO create proper passport mock: See https://gist.github.com/mweibel/5219403
-  let safeUserObject = null;
-  if (req.user) {
-    safeUserObject = {
-      id: req.user.id,
-      displayName: escape(req.user.displayName),
-      provider: escape(req.user.provider),
-      username: escape(req.user.username),
-      created: req.user.created.toString(),
-      roles: req.user.roles,
-      profileImageURL: req.user.profileImageURL,
-      email: escape(req.user.email),
-      lastName: escape(req.user.lastName),
-      firstName: escape(req.user.firstName),
-      additionalProvidersData: req.user.additionalProvidersData
-    };
-  }
-
-  res.json(safeUserObject || null);
-};
