@@ -8,15 +8,15 @@
       <p>\{{post.text}}</p>
     </ng-template>
     <mat-form-field *ngIf="post.editing; else postText">
-      <textarea matInput placeholder="Post Text" #postEdit [value]="post.text"
+      <textarea matInput placeholder="Post Text" [value]="post.text"
                 cdkTextareaAutosize minRows="3" required></textarea>
-      <mat-error *ngIf="!postEdit.value">There must be text in post to save</mat-error>
+      <mat-error *ngIf="!post.editText">There must be text in post to save</mat-error>
      </mat-form-field>
   </mat-card-content>
   <mat-card-actions *ngIf="(getUserID$ | async) === post.user.id">
     <ng-container *ngIf="post.editing; else viewing">
-      <button mat-button (click)="cancelEdit(post, postEdit)">CANCEL</button>
-      <button mat-button color="primary" [disabled]="!postEdit.value" (click)="savePost(post, postEdit)">SAVE</button>
+      <button mat-button (click)="cancelEdit(post)">CANCEL</button>
+      <button mat-button color="primary" [disabled]="!post.editText" (click)="savePost(post)">SAVE</button>
     </ng-container>
     <ng-template #viewing>
       <button mat-button (click)="delete(post)">DELETE</button>
