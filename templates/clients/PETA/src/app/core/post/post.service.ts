@@ -9,9 +9,9 @@ export class PostService {
   constructor(private http: HttpClient) {
   }
 
-  fetchPosts(): Observable<Post> {
+  fetchPosts(): Observable<Post[]> {
     return this.http
-      .get<Post>('/api/posts');
+      .get<Post[]>('/api/posts');
   }
 
   createPost(post: Post): Observable<Post> {
@@ -19,8 +19,18 @@ export class PostService {
       .post<Post>('/api/posts', post);
   }
 
-  fetchPost(postId: string): Observable<Post> {
+  fetchPost(postId: number): Observable<Post> {
     return this.http
       .get<Post>(`/api/posts/${postId}`);
+  }
+
+  updatePost(postId: number, data: Partial<Post>): Observable<Post> {
+    return this.http
+      .post<Post>(`/api/posts/${postId}`, data);
+  }
+
+  deletePost(postId: number): Observable<Post> {
+    return this.http
+      .delete<Post>(`/api/posts/${postId}`);
   }
 }

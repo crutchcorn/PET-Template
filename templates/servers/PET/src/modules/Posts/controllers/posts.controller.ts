@@ -8,32 +8,36 @@ export interface PostRequest extends Request {
 
 const postRepository = getManager().getRepository(Post);
 
-/**
- * Saves given post.
- */
-
 export async function postSaveAction(req: Request, res: Response) {
-  const newPost = postRepository.create({
-    ...req.body,
-    user: req.user
-  });
-  postRepository.save(newPost)
-    .then(post => res.send(post))
-    .catch(err => res.status(500).send({message: 'There was an error with saving the post'}));
+  try {
+    const newPost = postRepository.create({
+      ...req.body,
+      user: req.user
+    });
+    await postRepository.save(newPost);
+    res.send(newPost);
+  } catch (err) {
+    res.status(500).send({message: 'There was an error with saving the post'});
+  }
 }
 
 export function postGetByIdAction(req: PostRequest, res: Response) {
   res.send(req.post);
 }
 
-
 export async function postUpdateAction(req: PostRequest, res: Response) {
-  // TODO: Model is not returning any data
   try {
-    const updatedPost = await postRepository.update(req.post.id, {
-      ...req.body,
-      user: undefined
+    const post = await postRepository.findOne(req.post.id);
+    if (!post) {
+      return res.status(404).send({message: 'No post with that ID could be found'});
+    }
+    const updatedPost = postRepository.create({
+      ...post, ...{
+        ...req.body,
+        user: undefined
+      }
     });
+    await postRepository.save(updatedPost);
     res.send(updatedPost);
   } catch (err) {
     res.status(500).send({message: 'There was an error while updating the post'});
@@ -50,20 +54,24 @@ export async function postDeleteAction(req: PostRequest, res: Response) {
 }
 
 export async function postGetAllAction(req: Request, res: Response) {
-  postRepository.find()
-    .then(posts => res.send(posts))
-    .catch(err => res.status(500).send({message: 'There was an error getting posts'}));
+  try {
+    const posts = await postRepository.find();
+    res.send(posts);
+  } catch (err) {
+    res.status(500).send({message: 'There was an error getting posts'});
+  }
 }
 
 export async function postByID(req: PostRequest, res: Response, next: Function, id: string) {
-  postRepository.findOne(id)
-    .then(post => {
-      if (!post) {
-        res.status(404).send({message: 'Couldn\'t find a post with that ID'});
-      } else {
-        req.post = post;
-        next();
-      }
-    })
-    .catch(err => res.status(500).send({message: 'There was an error finding that post'}));
+  try {
+    const post = await postRepository.findOne(id);
+    if (!post) {
+      res.status(404).send({message: 'Couldn\'t find a post with that ID'});
+    } else {
+      req.post = post;
+      next();
+    }
+  } catch (err) {
+    res.status(500).send({message: 'There was an error finding that post'});
+  }
 }

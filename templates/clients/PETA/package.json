@@ -27,10 +27,12 @@
     "@angular/service-worker": "^6.0.5",
     "@ngrx/store": "^6.0.1",
     "@types/socket.io-client": "^1.4.32",
+    "classlist.js": "^1.1.20150312",
     "core-js": "^2.5.7",
     "ngrx-store-freeze": "^0.2.1",
     "rxjs": "^6.2.1",
     "socket.io-client": "^2.1.1",
+    "web-animations-js": "^2.3.1",
     "zone.js": "^0.8.26"
   },
   "devDependencies": {

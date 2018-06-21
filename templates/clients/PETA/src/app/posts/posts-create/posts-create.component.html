@@ -1,0 +1,11 @@
+<form [formGroup]="form" (ngSubmit)="create()">
+  <mat-form-field [style.fontSize.px]="20">
+    <input matInput formControlName="title" placeholder="Post Title" required #title>
+    <mat-error *ngIf="form.get('title').invalid && submitted">Title is Required</mat-error>
+  </mat-form-field>
+  <mat-form-field>
+<textarea matInput formControlName="text" placeholder="Post Text" #postEdit
+          cdkTextareaAutosize minRows="3" required></textarea>
+    <mat-error *ngIf="form.get('text').invalid && submitted">Title is Required</mat-error>
+  </mat-form-field>
+</form>

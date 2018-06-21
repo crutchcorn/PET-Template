@@ -13,7 +13,6 @@ import {Router} from '@angular/router';
 import {Store} from '@ngrx/store';
 import {AuthService} from './auth.service';
 import * as fromRoot from '../reducers';
-import * as userActions from '../../core/user/user.actions';
 
 import {isOurAPICall} from '../../shared/functions/api';
 
