@@ -200,31 +200,31 @@ export function init(): appType {
   const store = new session.MemoryStore;
 
   // Initialize local variables
-  this.initLocalVariables(app);
+  initLocalVariables(app);
 
   // Initialize Express middleware
-  this.initMiddleware(app);
+  initMiddleware(app);
 
   // Initialize Helmet security headers
-  this.initHelmetHeaders(app);
+  initHelmetHeaders(app);
 
   // Initialize Express session
-  this.initSession(app, store);
+  initSession(app, store);
 
   // Initialize Modules configuration
-  this.initModulesConfiguration(app);
+  initModulesConfiguration(app);
 
   // Initialize modules server authorization policies
-  this.initModulesServerPolicies();
+  initModulesServerPolicies();
 
   // Initialize modules server routes
-  this.initModulesServerRoutes(app);
+  initModulesServerRoutes(app);
 
   // Initialize error routes
-  this.initErrorRoutes(app);
+  initErrorRoutes(app);
 
   // Configure Socket.io
-  app = this.configureSocketIO(app, store);
+  app = configureSocketIO(app, store);
 
   return app;
 }
